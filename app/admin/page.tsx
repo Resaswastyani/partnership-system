@@ -75,7 +75,7 @@ export default function AdminDashboard() {
             title="Total Members"
             value={MOCK_DASHBOARD_STATS.totalMembers}
             subtitle={`Dari ${MOCK_DASHBOARD_STATS.totalUsers} users`}
-            icon="👥"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
             color="cyan"
             trend={{ value: 15, direction: 'up' }}
           />
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
             title="Total Referrals"
             value={MOCK_DASHBOARD_STATS.totalReferrals.toLocaleString()}
             subtitle="Semua waktu"
-            icon="🔗"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>}
             color="green"
             trend={{ value: 22, direction: 'up' }}
           />
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
             title="Komisi Pending"
             value={`Rp ${(MOCK_DASHBOARD_STATS.totalCommissionsPending / 1_000_000).toFixed(1)}M`}
             subtitle="Siap dibayar"
-            icon="💳"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             color="orange"
           />
         </motion.div>
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
             title="Conversion Rate"
             value={`${MOCK_DASHBOARD_STATS.conversionRate}%`}
             subtitle="Industry avg: 28%"
-            icon="📈"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
             color="pink"
             trend={{ value: 5, direction: 'up' }}
           />
@@ -118,7 +118,8 @@ export default function AdminDashboard() {
           <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-[40px] pointer-events-none" />
           <div className="flex justify-between items-center mb-8 relative z-10">
             <h3 className="text-white font-bold text-xl flex items-center gap-2">
-              <span className="text-primary">📊</span> Revenue Trend
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              Revenue Trend
             </h3>
             <div className="flex gap-2">
               <button className="px-4 py-1.5 bg-primary/20 text-primary text-xs font-bold rounded-lg border border-primary/30">Month</button>
@@ -170,7 +171,8 @@ export default function AdminDashboard() {
         <motion.div variants={itemVariants} className="glass-card rounded-2xl p-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-[40px] pointer-events-none" />
           <h3 className="text-white font-bold text-xl mb-8 flex items-center gap-2 relative z-10">
-            <span className="text-accent">🥧</span> Commission Breakdown
+            <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
+            Commission Breakdown
           </h3>
 
           <div className="space-y-6 relative z-10">
@@ -304,7 +306,8 @@ export default function AdminDashboard() {
           <div className="absolute bottom-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-[60px] pointer-events-none" />
           <div className="flex items-center justify-between mb-8 relative z-10">
             <h3 className="text-white font-bold text-xl flex items-center gap-2">
-              <span className="text-primary">⚡</span> Recent Activity
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              Recent Activity
             </h3>
             <button className="px-4 py-1.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white text-xs font-bold rounded-lg transition-colors">
               Refresh
@@ -323,7 +326,9 @@ export default function AdminDashboard() {
       <motion.div variants={containerVariants} className="grid md:grid-cols-3 gap-6">
         <motion.a variants={itemVariants} href="/admin/members" className="glass-card rounded-2xl p-8 hover:border-primary/50 transition-all duration-300 cursor-pointer group relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="text-5xl mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">👥</div>
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+          </div>
           <h3 className="text-white font-bold text-xl mb-2">Kelola Members</h3>
           <p className="text-gray-400 text-sm font-medium">Lihat, edit, suspend members</p>
           <div className="mt-6 text-primary font-bold text-sm flex items-center gap-2 group-hover:translate-x-2 transition-transform">
@@ -333,7 +338,9 @@ export default function AdminDashboard() {
 
         <motion.a variants={itemVariants} href="/admin/products" className="glass-card rounded-2xl p-8 hover:border-accent/50 transition-all duration-300 cursor-pointer group relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="text-5xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">📦</div>
+          <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+          </div>
           <h3 className="text-white font-bold text-xl mb-2">Kelola Produk</h3>
           <p className="text-gray-400 text-sm font-medium">Update harga, komisi, info produk</p>
           <div className="mt-6 text-accent font-bold text-sm flex items-center gap-2 group-hover:translate-x-2 transition-transform">
@@ -343,7 +350,9 @@ export default function AdminDashboard() {
 
         <motion.a variants={itemVariants} href="/admin/payouts" className="glass-card rounded-2xl p-8 hover:border-pink-500/50 transition-all duration-300 cursor-pointer group relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="text-5xl mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">💳</div>
+          <div className="w-16 h-16 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-500 mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+          </div>
           <h3 className="text-white font-bold text-xl mb-2">Payouts</h3>
           <p className="text-gray-400 text-sm font-medium">Proses pembayaran komisi members</p>
           <div className="mt-6 text-pink-400 font-bold text-sm flex items-center gap-2 group-hover:translate-x-2 transition-transform">

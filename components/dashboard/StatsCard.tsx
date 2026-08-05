@@ -1,8 +1,10 @@
+import { ReactNode } from 'react'
+
 interface StatsCardProps {
   title: string
   value: string | number
   subtitle?: string
-  icon: string
+  icon: ReactNode | string
   color: 'cyan' | 'green' | 'orange' | 'pink'
   trend?: {
     value: number

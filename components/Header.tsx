@@ -3,27 +3,40 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-white/5">
+    <header className="fixed top-0 w-full z-50 bg-[#080b14]/80 backdrop-blur-md border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <Image
-              src="/fbl-logo.png"
-              alt="FBL Partnership"
-              width={40}
-              height={40}
-              className="w-auto h-10"
-            />
-            <div className="flex flex-col">
-              <span className="text-white font-bold text-sm tracking-widest">FBL</span>
-              <span className="text-accent text-xs font-semibold tracking-wider">PARTNERSHIP</span>
-            </div>
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="bg-white p-1.5 rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.15)] flex items-center justify-center"
+            >
+              <Image
+                src="/fbl-logo.png"
+                alt="FBL Partnership"
+                width={40}
+                height={40}
+                className="w-auto h-8 object-contain"
+              />
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex flex-col"
+            >
+              <span className="text-white font-black text-base tracking-[0.2em] leading-none mb-1">FBL</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent text-[10px] font-bold tracking-[0.3em] uppercase leading-none">
+                PARTNERSHIP
+              </span>
+            </motion.div>
           </Link>
 
           {/* Desktop Navigation */}

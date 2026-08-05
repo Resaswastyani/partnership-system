@@ -51,7 +51,7 @@ export default function DashboardPage() {
             title="Total Earnings"
             value={`Rp ${(CURRENT_USER.totalEarnings / 1_000_000).toFixed(1)}M`}
             subtitle="Dari semua referral"
-            icon="💰"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             color="cyan"
             trend={{ value: 12, direction: 'up' }}
           />
@@ -61,7 +61,7 @@ export default function DashboardPage() {
             title="Pending Komisi"
             value={`Rp ${(CURRENT_USER.pendingCommissions / 1_000_000).toFixed(1)}M`}
             subtitle="Menunggu verifikasi"
-            icon="⏳"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             color="orange"
           />
         </motion.div>
@@ -70,7 +70,7 @@ export default function DashboardPage() {
             title="Total Referral"
             value={CURRENT_USER.totalReferrals}
             subtitle={`${convertedReferrals.length} converted`}
-            icon="🔗"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>}
             color="green"
             trend={{ value: 8, direction: 'up' }}
           />
@@ -80,7 +80,7 @@ export default function DashboardPage() {
             title="Conversion Rate"
             value="34.5%"
             subtitle="Rata-rata industri 28%"
-            icon="📊"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
             color="pink"
             trend={{ value: 3, direction: 'up' }}
           />
@@ -99,7 +99,8 @@ export default function DashboardPage() {
           {/* Top Products */}
           <motion.div variants={itemVariants} className="glass-card rounded-2xl p-6">
             <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-              <span className="text-primary">🔥</span> Produk Terlaris
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
+              Produk Terlaris
             </h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 rounded-xl hover:bg-white/5 transition-colors">
@@ -129,11 +130,14 @@ export default function DashboardPage() {
           {/* Recent Activity */}
           <motion.div variants={itemVariants} className="glass-card rounded-2xl p-6">
             <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-              <span className="text-accent">⚡</span> Aktivitas Terbaru
+              <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              Aktivitas Terbaru
             </h3>
             <div className="space-y-4">
               <div className="flex gap-4 items-start p-3 rounded-xl hover:bg-white/5 transition-colors border-b border-white/5 pb-4">
-                <div className="text-xl bg-white/5 w-10 h-10 rounded-lg flex items-center justify-center border border-white/10">📈</div>
+                <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                </div>
                 <div className="flex-1">
                   <p className="text-white text-sm font-semibold">Referral berhasil</p>
                   <p className="text-gray-400 text-xs mt-0.5">Eka Prasetya beli Materi Trading</p>
@@ -141,7 +145,9 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex gap-4 items-start p-3 rounded-xl hover:bg-white/5 transition-colors border-b border-white/5 pb-4">
-                <div className="text-xl bg-emerald-500/10 w-10 h-10 rounded-lg flex items-center justify-center border border-emerald-500/20">✅</div>
+                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center border border-emerald-500/20 text-emerald-500">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                </div>
                 <div className="flex-1">
                   <p className="text-white text-sm font-semibold">Komisi diterima</p>
                   <p className="text-gray-400 text-xs mt-0.5">Rp 8,970 dari referral</p>
@@ -149,7 +155,9 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex gap-4 items-start p-3 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="text-xl bg-amber-500/10 w-10 h-10 rounded-lg flex items-center justify-center border border-amber-500/20">🎉</div>
+                <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center border border-amber-500/20 text-amber-500">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                </div>
                 <div className="flex-1">
                   <p className="text-white text-sm font-semibold">Milestone tercapai</p>
                   <p className="text-gray-400 text-xs mt-0.5">Anda mencapai 45 referral!</p>
