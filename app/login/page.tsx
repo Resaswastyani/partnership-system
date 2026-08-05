@@ -18,19 +18,34 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      if (email && password) {
-        // Admin detection: admin@fbl.com or admin@forexforbetterliving.com → /admin
-        const isAdmin = email.includes('admin@')
-        const role = isAdmin ? 'admin' : 'user'
-        localStorage.setItem('auth_user', JSON.stringify({ email, role }))
-        router.push(isAdmin ? '/admin' : '/dashboard')
-      } else {
-        setError('Email dan password harus diisi')
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Login gagal')
+        setLoading(false)
+        return
       }
+
+      // Save user info to localStorage for UI
+      localStorage.setItem('auth_user', JSON.stringify(data.user))
+
+      // Redirect based on role
+      if (data.user.role === 'admin') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
+    } catch (err) {
+      setError('Gagal terhubung ke server. Coba lagi.')
       setLoading(false)
-    }, 1000)
+    }
   }
 
   return (

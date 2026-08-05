@@ -54,16 +54,34 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      localStorage.setItem('auth_user', JSON.stringify({ 
-        email: formData.email, 
-        name: formData.name,
-        role: 'user' 
-      }))
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone
+        })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Pendaftaran gagal')
+        setLoading(false)
+        return
+      }
+
+      // Save user info to localStorage for UI
+      localStorage.setItem('auth_user', JSON.stringify(data.user))
+      
       router.push('/dashboard')
+    } catch (err) {
+      setError('Gagal terhubung ke server. Coba lagi.')
       setLoading(false)
-    }, 1000)
+    }
   }
 
   return (
