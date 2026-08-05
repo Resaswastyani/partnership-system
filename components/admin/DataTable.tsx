@@ -49,47 +49,59 @@ export function DataTable({ columns, data, onRowClick, actions }: DataTableProps
   }
 
   return (
-    <div className="space-y-4">
-      <input
-        type="text"
-        placeholder="Cari..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500"
-      />
+    <div className="space-y-5">
+      {/* Search bar */}
+      <div className="relative">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Cari data..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all text-sm"
+        />
+      </div>
       
-      <div className="overflow-x-auto rounded-lg border border-white/10">
+      <div className="overflow-x-auto rounded-xl border border-white/5">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/10 bg-white/5">
+            <tr className="border-b border-white/5 bg-white/[0.02]">
               {columns.map(col => (
                 <th
                   key={col.key}
                   onClick={() => col.sortable && handleSort(col.key)}
-                  className={`px-6 py-3 text-left text-sm font-semibold text-foreground ${
-                    col.sortable ? 'cursor-pointer hover:bg-white/10' : ''
+                  className={`px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider ${
+                    col.sortable ? 'cursor-pointer hover:text-white hover:bg-white/5 transition-colors' : ''
                   } ${col.width || ''}`}
                 >
                   <div className="flex items-center gap-2">
                     {col.label}
-                    {col.sortable && sortKey === col.key && (
-                      <span className="text-xs">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    {col.sortable && (
+                      <span className={`text-xs transition-colors ${sortKey === col.key ? 'text-primary' : 'text-gray-600'}`}>
+                        {sortKey === col.key ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}
+                      </span>
                     )}
                   </div>
                 </th>
               ))}
-              {actions && <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Aksi</th>}
+              {actions && (
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
+              )}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-white/[0.04]">
             {sortedData.map((row, idx) => (
               <tr
                 key={idx}
                 onClick={() => onRowClick?.(row)}
-                className="border-b border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+                className="hover:bg-white/[0.02] transition-colors group"
               >
                 {columns.map(col => (
-                  <td key={col.key} className="px-6 py-4 text-sm text-foreground">
+                  <td key={col.key} className="px-6 py-4 text-sm text-gray-300">
                     {col.render ? col.render(row[col.key], row) : row[col.key]}
                   </td>
                 ))}
@@ -103,7 +115,7 @@ export function DataTable({ columns, data, onRowClick, actions }: DataTableProps
                             e.stopPropagation()
                             action.onClick(row)
                           }}
-                          className="px-3 py-1 rounded bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 text-xs font-medium transition-colors"
+                          className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40 text-xs font-bold transition-all"
                         >
                           {action.label}
                         </button>
@@ -118,8 +130,18 @@ export function DataTable({ columns, data, onRowClick, actions }: DataTableProps
       </div>
 
       {sortedData.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          Tidak ada data yang ditemukan
+        <div className="text-center py-16 text-gray-500">
+          <div className="text-4xl mb-4">🔍</div>
+          <p className="font-medium">Tidak ada data yang ditemukan</p>
+          <p className="text-sm mt-1">Coba ubah kata kunci pencarian</p>
+        </div>
+      )}
+
+      {sortedData.length > 0 && (
+        <div className="flex justify-between items-center pt-2">
+          <p className="text-xs text-gray-500">
+            Menampilkan <span className="text-white font-semibold">{sortedData.length}</span> dari <span className="text-white font-semibold">{data.length}</span> data
+          </p>
         </div>
       )}
     </div>

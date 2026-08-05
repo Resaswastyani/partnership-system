@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { PRODUCTS } from '@/lib/mock-data'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { motion } from 'framer-motion'
 
 interface Product {
   id: string
@@ -64,101 +65,145 @@ export default function ProductsPage() {
     ))
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  }
+
+  const statCards = [
+    { label: 'Total Produk', value: stats.total, color: 'text-primary', icon: '📦' },
+    { label: 'Aktif', value: stats.active, color: 'text-emerald-400', icon: '✅' },
+    { label: 'Estimasi Revenue', value: `Rp ${(stats.totalRevenue / 1_000_000).toFixed(0)}M`, color: 'text-amber-400', icon: '💰' },
+    { label: 'Rata-rata Komisi', value: `${stats.avgCommission}%`, color: 'text-sky-400', icon: '📊' },
+  ]
+
   return (
-    <div className="space-y-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8"
+    >
+      {/* Header */}
+      <motion.div variants={itemVariants} className="space-y-1">
+        <h1 className="text-3xl font-bold text-white tracking-wide">Kelola Produk</h1>
+        <p className="text-gray-400">Update harga, komisi, dan status produk</p>
+      </motion.div>
+
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-          <p className="text-sm text-muted-foreground">Total Produk</p>
-          <p className="text-2xl font-bold text-cyan-400 mt-1">{stats.total}</p>
-        </div>
-        <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-          <p className="text-sm text-muted-foreground">Aktif</p>
-          <p className="text-2xl font-bold text-green-400 mt-1">{stats.active}</p>
-        </div>
-        <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-          <p className="text-sm text-muted-foreground">Total Revenue (Estimate)</p>
-          <p className="text-lg font-bold text-yellow-400 mt-1">Rp {(stats.totalRevenue / 1_000_000).toFixed(0)}M</p>
-        </div>
-        <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-          <p className="text-sm text-muted-foreground">Rata-rata Komisi</p>
-          <p className="text-2xl font-bold text-blue-400 mt-1">{stats.avgCommission}%</p>
-        </div>
-      </div>
+      <motion.div variants={containerVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statCards.map((card, idx) => (
+          <motion.div
+            key={idx}
+            variants={itemVariants}
+            className="glass-card rounded-2xl p-5 hover:border-white/15 transition-all relative overflow-hidden"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-xl">{card.icon}</span>
+              <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{card.label}</p>
+            </div>
+            <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
+          </motion.div>
+        ))}
+      </motion.div>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {products.map(product => (
-          <div key={product.id} className="bg-[#1a2847] rounded-lg overflow-hidden border border-white/10 hover:border-cyan-500/50 transition-colors">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-foreground">{product.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {product.type === 'download' ? 'File Download' : 'Web Credentials'}
-                  </p>
-                </div>
+      <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {products.map((product, idx) => (
+          <motion.div
+            key={product.id}
+            variants={itemVariants}
+            className="glass-card rounded-2xl overflow-hidden hover:border-primary/30 transition-all duration-300 group relative"
+          >
+            <div className="relative overflow-hidden h-52">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
+              <div className="absolute top-4 right-4">
                 <StatusBadge status={product.active ? 'active' : 'suspended'} />
               </div>
+              <div className="absolute bottom-4 left-4">
+                <span className="text-xs px-2 py-1 rounded-full bg-white/10 backdrop-blur-sm text-gray-300 border border-white/10 font-medium">
+                  {product.type === 'download' ? '📥 File Download' : '🔑 Web Credentials'}
+                </span>
+              </div>
+            </div>
 
-              <div className="space-y-2 mb-4 p-3 bg-white/5 rounded">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Harga:</span>
-                  <span className="font-bold text-cyan-400">Rp {product.price.toLocaleString('id-ID')}</span>
+            <div className="p-6">
+              <h3 className="font-bold text-lg text-white mb-4 group-hover:text-primary transition-colors">{product.name}</h3>
+
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="p-3 bg-white/5 border border-white/10 rounded-xl">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Harga</p>
+                  <p className="font-bold text-primary text-lg">Rp {product.price.toLocaleString('id-ID')}</p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Komisi:</span>
-                  <span className="font-bold text-yellow-400">{product.commissionRate}%</span>
+                <div className="p-3 bg-white/5 border border-white/10 rounded-xl">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Komisi</p>
+                  <p className="font-bold text-amber-400 text-lg">{product.commissionRate}%</p>
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="flex gap-3">
                 <button
                   onClick={() => openEditModal(product)}
-                  className="w-full px-4 py-2 rounded bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 transition-colors font-medium text-sm"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 transition-all font-bold text-sm shadow-[0_0_15px_rgba(251,191,36,0.05)] hover:shadow-[0_0_15px_rgba(251,191,36,0.2)]"
                 >
-                  Edit Harga & Komisi
+                  ✏️ Edit Harga & Komisi
                 </button>
                 <button
                   onClick={() => toggleActive(product.id)}
-                  className={`w-full px-4 py-2 rounded font-medium text-sm transition-colors ${
+                  className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all border ${
                     product.active
-                      ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30'
-                      : 'bg-green-500/20 text-green-300 hover:bg-green-500/30'
+                      ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
+                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                   }`}
                 >
-                  {product.active ? 'Deaktifkan' : 'Aktifkan'}
+                  {product.active ? '🚫' : '✅'}
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Edit Modal */}
       {editModal.visible && editModal.product && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a2847] rounded-lg p-6 max-w-md w-full border border-white/10">
-            <h3 className="text-lg font-bold mb-6 text-foreground">Edit {editModal.product.name}</h3>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="glass-card rounded-2xl p-8 max-w-md w-full"
+          >
+            <h3 className="text-xl font-bold mb-6 text-white flex items-center gap-2">
+              <span className="text-primary">✏️</span> Edit {editModal.product.name}
+            </h3>
 
-            <div className="space-y-4 mb-6">
+            <div className="space-y-5 mb-8">
               <div>
-                <label className="text-sm text-muted-foreground">Harga (Rp)</label>
+                <label className="text-sm text-gray-400 font-semibold uppercase tracking-wider block mb-2">Harga (Rp)</label>
                 <input
                   type="number"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                  className="w-full mt-2 px-4 py-2 bg-white/5 border border-white/10 rounded text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-sm text-muted-foreground">Komisi (%)</label>
+                <label className="text-sm text-gray-400 font-semibold uppercase tracking-wider block mb-2">Komisi (%)</label>
                 <input
                   type="number"
                   value={formData.commissionRate}
@@ -166,7 +211,7 @@ export default function ProductsPage() {
                   min="0"
                   max="100"
                   step="0.5"
-                  className="w-full mt-2 px-4 py-2 bg-white/5 border border-white/10 rounded text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all"
                 />
               </div>
             </div>
@@ -174,20 +219,20 @@ export default function ProductsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setEditModal({ visible: false, product: null })}
-                className="flex-1 px-4 py-2 rounded bg-white/10 hover:bg-white/20 transition-colors text-foreground"
+                className="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-gray-300 hover:text-white font-medium"
               >
                 Batal
               </button>
               <button
                 onClick={saveChanges}
-                className="flex-1 px-4 py-2 rounded bg-cyan-500 hover:bg-cyan-600 transition-colors text-white font-medium"
+                className="flex-1 px-4 py-3 rounded-xl bg-primary/80 hover:bg-primary border border-primary/30 transition-all text-background font-bold shadow-[0_0_20px_rgba(251,191,36,0.3)]"
               >
-                Simpan
+                Simpan Perubahan
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   )
 }

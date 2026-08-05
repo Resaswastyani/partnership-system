@@ -7,13 +7,13 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, label }: StatusBadgeProps) {
   const statusStyles = {
-    active: 'bg-green-500/20 text-green-300 border border-green-500/30',
-    pending: 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30',
-    suspended: 'bg-red-500/20 text-red-300 border border-red-500/30',
-    success: 'bg-green-500/20 text-green-300 border border-green-500/30',
-    failed: 'bg-red-500/20 text-red-300 border border-red-500/30',
-    approved: 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
-    processed: 'bg-green-500/20 text-green-300 border border-green-500/30'
+    active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]',
+    pending: 'bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.15)]',
+    suspended: 'bg-red-500/10 text-red-400 border border-red-500/30 shadow-[0_0_8px_rgba(239,68,68,0.15)]',
+    success: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]',
+    failed: 'bg-red-500/10 text-red-400 border border-red-500/30 shadow-[0_0_8px_rgba(239,68,68,0.15)]',
+    approved: 'bg-blue-500/10 text-blue-400 border border-blue-500/30 shadow-[0_0_8px_rgba(59,130,246,0.15)]',
+    processed: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
   }
 
   const statusLabels = {
@@ -26,8 +26,19 @@ export function StatusBadge({ status, label }: StatusBadgeProps) {
     processed: 'Diproses'
   }
 
+  const statusDots = {
+    active: 'bg-emerald-400',
+    pending: 'bg-amber-400',
+    suspended: 'bg-red-400',
+    success: 'bg-emerald-400',
+    failed: 'bg-red-400',
+    approved: 'bg-blue-400',
+    processed: 'bg-emerald-400'
+  }
+
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusStyles[status]}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${statusStyles[status]}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${statusDots[status]}`} />
       {label || statusLabels[status]}
     </span>
   )
