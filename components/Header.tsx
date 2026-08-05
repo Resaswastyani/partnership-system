@@ -13,17 +13,18 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-100 transition-opacity group">
             <motion.div 
               whileHover={{ scale: 1.05 }}
-              className="bg-white p-1.5 rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.15)] flex items-center justify-center"
+              className="relative p-1 rounded-xl flex items-center justify-center"
             >
+              <div className="absolute inset-0 bg-primary/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Image
                 src="/fbl-logo.png"
                 alt="FBL Partnership"
                 width={40}
                 height={40}
-                className="w-auto h-8 object-contain"
+                className="w-auto h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] group-hover:drop-shadow-[0_0_12px_rgba(139,92,246,0.8)] transition-all duration-300"
               />
             </motion.div>
             <motion.div 

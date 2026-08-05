@@ -5,190 +5,297 @@ import Image from 'next/image'
 import { PRODUCTS } from '@/lib/mock-data'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { useRef, useState } from 'react'
 
 export default function ProductsPage() {
+  const containerRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end start']
+  })
+
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+
+  const [activeFaq, setActiveFaq] = useState<number | null>(null)
+
+  const faqs = [
+    {
+      q: 'Bagaimana cara mendapatkan akses produk setelah membeli?',
+      a: 'Untuk produk tipe download, Anda akan mendapat link download langsung setelah checkout. Untuk produk tipe web access, Anda akan menerima login credentials via email.'
+    },
+    {
+      q: 'Apakah produk ini mendapat update gratis?',
+      a: 'Ya! Semua produk FBL mendapatkan update gratis seumur hidup (lifetime access) tanpa biaya tambahan.'
+    },
+    {
+      q: 'Bagaimana jika saya tidak puas dengan produknya?',
+      a: 'Kami menawarkan garansi uang kembali 100% selama 30 hari jika Anda tidak puas dengan produk kami. Kepuasan Anda adalah prioritas.'
+    }
+  ]
+
   return (
-    <main className="w-full min-h-screen bg-[#0f172a]">
+    <main className="w-full min-h-screen bg-[#05070a] text-white overflow-hidden relative selection:bg-primary/30 selection:text-white" ref={containerRef}>
       <Header />
       
-      <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Section Header */}
-          <div className="text-center mb-16 space-y-4">
-            <div className="inline-block px-4 py-2 bg-[#00d9ff]/10 border border-[#00d9ff]/30 rounded-lg">
-              <p className="text-[#00d9ff] text-sm font-semibold">PRODUK FBL</p>
-            </div>
-            <h1 className="text-5xl font-bold text-white">
-              Semua Produk Trading FBL
-            </h1>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Jelajahi koleksi lengkap produk trading premium kami dengan harga kompetitif dan komisi menarik untuk affiliates.
-            </p>
-          </div>
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-accent/10 rounded-full blur-[150px]" />
+        <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[60%] h-[20%] bg-indigo-500/10 rounded-[100%] blur-[100px]" />
+      </div>
+      
+      <div className="relative z-10 pt-40 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        
+        {/* ── HERO SECTION ── */}
+        <motion.div 
+          style={{ y, opacity }}
+          className="text-center mb-32 space-y-8"
+        >
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-md"
+          >
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-gray-300 text-xs font-bold tracking-[0.2em] uppercase">Premium Trading Assets</span>
+          </motion.div>
 
-          {/* Product Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {PRODUCTS.map((product) => (
-              <div
-                key={product.id}
-                className="group relative bg-gradient-to-br from-[#1a2847] to-[#0f172a] border border-white/10 rounded-xl overflow-hidden hover:border-[#00d9ff]/50 transition-all duration-300 hover:shadow-xl hover:shadow-[#00d9ff]/20 flex flex-col"
-              >
-                {/* Product Image */}
-                <div className="relative h-40 overflow-hidden bg-gradient-to-br from-[#00d9ff]/10 to-[#8b5cf6]/10">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                </div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+            className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]"
+          >
+            PRODUK <span className="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/20">FBL</span>
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">& HARGA</span>
+          </motion.h1>
 
-                {/* Content */}
-                <div className="p-6 flex flex-col flex-1">
-                  {/* Type Badge */}
-                  <div className="mb-3">
-                    <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#00d9ff]/20 text-[#00d9ff] border border-[#00d9ff]/30">
-                      {product.type === 'download' ? '📥 Download' : '🔑 Web Access'}
-                    </span>
-                  </div>
+          <motion.p 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto font-light"
+          >
+            Jelajahi koleksi produk trading profesional. Jual produk ini dan nikmati komisi <strong className="text-white font-bold">hingga 50%</strong>.
+          </motion.p>
+        </motion.div>
 
-                  {/* Title & Description */}
-                  <h3 className="text-white font-bold text-lg mb-2">{product.name}</h3>
-                  <p className="text-gray-400 text-sm mb-4 flex-1">{product.description}</p>
+        {/* ── PRODUCTS GRID ── */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-40">
+          {PRODUCTS.map((product, index) => (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              whileHover={{ y: -10 }}
+              key={product.id}
+              className="group relative bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden backdrop-blur-xl flex flex-col hover:bg-white/[0.04] transition-colors duration-500"
+            >
+              {/* Glowing Border Effect */}
+              <div className="absolute inset-0 rounded-3xl border border-transparent group-hover:border-primary/50 transition-colors duration-500 z-20 pointer-events-none" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-b from-primary/10 to-transparent transition-opacity duration-500 z-0" />
 
-                  {/* Features */}
-                  <div className="space-y-1 mb-4 pb-4 border-b border-white/10">
-                    {product.features.slice(0, 3).map((feature, idx) => (
-                      <p key={idx} className="text-gray-400 text-xs flex items-start gap-2">
-                        <span className="text-[#00d9ff] mt-1">✓</span>
-                        <span>{feature}</span>
-                      </p>
-                    ))}
-                  </div>
-
-                  {/* Price & Commission */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400 text-sm">Harga:</span>
-                      <span className="text-white font-bold">{(product.price / 1000).toLocaleString()}K</span>
-                    </div>
-                    <div className="px-3 py-2 bg-[#00d9ff]/10 border border-[#00d9ff]/30 rounded-lg flex justify-between items-center">
-                      <span className="text-[#00d9ff] font-bold text-sm">Komisi Affiliate:</span>
-                      <span className="text-[#00d9ff] font-bold">{product.commissionRate}%</span>
-                    </div>
-                  </div>
-
-                  {/* CTA */}
-                  <div className="flex gap-2 mt-4">
-                    <Link
-                      href="/register"
-                      className="flex-1 px-4 py-2 bg-[#00d9ff] text-[#0f172a] font-bold rounded-lg hover:bg-[#00bfff] transition-colors text-center text-sm"
-                    >
-                      Jual Produk Ini
-                    </Link>
-                    <button className="px-3 py-2 border border-[#00d9ff]/50 text-[#00d9ff] rounded-lg hover:bg-[#00d9ff]/10 transition-colors text-sm">
-                      ℹ️
-                    </button>
-                  </div>
+              {/* Product Image */}
+              <div className="relative h-48 overflow-hidden z-10">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#05070a] to-transparent" />
+                
+                {/* Type Badge */}
+                <div className="absolute top-4 right-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5">
+                  <span className={product.type === 'download' ? 'text-primary' : 'text-accent'}>
+                    {product.type === 'download' ? '📥' : '🔑'}
+                  </span>
+                  {product.type === 'download' ? 'Download' : 'Web Access'}
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Product Comparison */}
-          <div className="bg-gradient-to-br from-[#1a2847] to-[#0f172a] border border-white/10 rounded-xl p-8 mb-12">
-            <h2 className="text-3xl font-bold text-white mb-8 text-center">Perbandingan Produk</h2>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left py-4 px-4 text-gray-400 font-semibold">Fitur</th>
-                    {PRODUCTS.map(p => (
-                      <th key={p.id} className="text-center py-4 px-4 text-gray-400 font-semibold text-sm">
-                        {p.name}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-white/10">
-                    <td className="py-4 px-4 text-gray-300 font-medium">Harga</td>
-                    {PRODUCTS.map(p => (
-                      <td key={p.id} className="text-center py-4 px-4 text-white font-bold">
-                        {(p.price / 1000).toLocaleString()}K
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b border-white/10">
-                    <td className="py-4 px-4 text-gray-300 font-medium">Komisi Affiliate</td>
-                    {PRODUCTS.map(p => (
-                      <td key={p.id} className="text-center py-4 px-4 text-[#00d9ff] font-bold">
-                        {p.commissionRate}%
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b border-white/10">
-                    <td className="py-4 px-4 text-gray-300 font-medium">Tipe Produk</td>
-                    {PRODUCTS.map(p => (
-                      <td key={p.id} className="text-center py-4 px-4 text-white">
-                        {p.type === 'download' ? 'Download' : 'Web Access'}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="py-4 px-4 text-gray-300 font-medium"># Fitur</td>
-                    {PRODUCTS.map(p => (
-                      <td key={p.id} className="text-center py-4 px-4 text-white font-bold">
-                        {p.features.length}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+              {/* Content */}
+              <div className="p-6 flex flex-col flex-1 relative z-10">
+                <h3 className="text-2xl font-bold mb-3">{product.name}</h3>
+                <p className="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">{product.description}</p>
 
-          {/* FAQ Section */}
-          <div id="faq" className="bg-gradient-to-br from-[#1a2847] to-[#0f172a] border border-white/10 rounded-xl p-8">
-            <h2 className="text-3xl font-bold text-white mb-8 text-center">Pertanyaan Umum</h2>
-            
-            <div className="space-y-4 max-w-2xl mx-auto">
-              <details className="group">
-                <summary className="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors font-semibold text-white">
-                  <span className="group-open:rotate-45 transition-transform">+</span>
-                  Bagaimana cara mendapatkan akses produk setelah membeli?
-                </summary>
-                <div className="px-4 py-3 text-gray-300 text-sm">
-                  Untuk produk tipe download, Anda akan mendapat link download langsung setelah checkout. Untuk produk tipe web access, Anda akan menerima login credentials via email.
+                {/* Features List */}
+                <div className="space-y-2.5 mb-6">
+                  {product.features.slice(0, 3).map((feature, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-sm">
+                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-300">{feature}</span>
+                    </div>
+                  ))}
                 </div>
-              </details>
 
-              <details className="group">
-                <summary className="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors font-semibold text-white">
-                  <span className="group-open:rotate-45 transition-transform">+</span>
-                  Apakah produk ini mendapat update gratis?
-                </summary>
-                <div className="px-4 py-3 text-gray-300 text-sm">
-                  Ya! Semua produk FBL mendapatkan update gratis seumur hidup (lifetime access) tanpa biaya tambahan.
+                {/* Pricing Box */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 mb-6 group-hover:border-primary/20 transition-colors duration-500">
+                  <div className="flex justify-between items-end mb-2">
+                    <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold">Harga</span>
+                    <span className="text-2xl font-black">Rp {(product.price / 1000).toLocaleString()}K</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-primary text-xs uppercase tracking-wider font-bold">Komisi Affiliate</span>
+                    <span className="text-primary font-black text-lg">{product.commissionRate}%</span>
+                  </div>
                 </div>
-              </details>
 
-              <details className="group">
-                <summary className="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors font-semibold text-white">
-                  <span className="group-open:rotate-45 transition-transform">+</span>
-                  Bagaimana jika saya tidak puas dengan produknya?
-                </summary>
-                <div className="px-4 py-3 text-gray-300 text-sm">
-                  Kami menawarkan garansi uang kembali 100% selama 30 hari jika Anda tidak puas dengan produk kami.
-                </div>
-              </details>
-            </div>
-          </div>
+                {/* Action */}
+                <Link
+                  href="/register"
+                  className="w-full py-4 bg-white/10 hover:bg-primary text-white font-bold rounded-xl text-center transition-colors duration-300 flex items-center justify-center gap-2 group/btn"
+                >
+                  Mulai Jual
+                  <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </div>
+            </motion.div>
+          ))}
         </div>
-      </div>
 
+        {/* ── COMPARISON TABLE ── */}
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="mb-40"
+        >
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-black">Perbandingan Produk</h2>
+            <p className="text-gray-400">Pilih produk yang paling sesuai untuk audiens Anda.</p>
+          </div>
+
+          <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-1 overflow-x-auto backdrop-blur-xl">
+            <table className="w-full min-w-[800px]">
+              <thead>
+                <tr>
+                  <th className="text-left p-6 text-gray-500 font-semibold uppercase tracking-wider text-xs">Fitur / Produk</th>
+                  {PRODUCTS.map(p => (
+                    <th key={p.id} className="p-6 text-center">
+                      <div className="font-bold text-lg">{p.name}</div>
+                      <div className="text-primary text-sm mt-1">{p.commissionRate}% Komisi</div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                <tr>
+                  <td className="p-6 text-gray-300 font-medium">Harga Dasar</td>
+                  {PRODUCTS.map(p => (
+                    <td key={p.id} className="p-6 text-center font-bold text-xl">
+                      Rp {(p.price / 1000).toLocaleString()}K
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className="p-6 text-gray-300 font-medium">Tipe Akses</td>
+                  {PRODUCTS.map(p => (
+                    <td key={p.id} className="p-6 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${p.type === 'download' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent'}`}>
+                        {p.type === 'download' ? '📥 Download' : '🔑 Web Access'}
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className="p-6 text-gray-300 font-medium">Dukungan Support</td>
+                  {PRODUCTS.map(p => (
+                    <td key={p.id} className="p-6 text-center">
+                      <svg className="w-5 h-5 mx-auto text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className="p-6 text-gray-300 font-medium">Lifetime Update</td>
+                  {PRODUCTS.map(p => (
+                    <td key={p.id} className="p-6 text-center">
+                      <svg className="w-5 h-5 mx-auto text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* ── FAQ SECTION ── */}
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="max-w-3xl mx-auto mb-20"
+          id="faq"
+        >
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-black">Pertanyaan Umum</h2>
+            <p className="text-gray-400">Jawaban untuk pertanyaan yang sering diajukan pembeli.</p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => {
+              const isOpen = activeFaq === idx
+              return (
+                <div 
+                  key={idx} 
+                  className={`border ${isOpen ? 'border-primary/30 bg-primary/5' : 'border-white/5 bg-white/[0.02]'} rounded-2xl overflow-hidden transition-all duration-300 backdrop-blur-md`}
+                >
+                  <button 
+                    onClick={() => setActiveFaq(isOpen ? null : idx)}
+                    className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
+                  >
+                    <span className={`font-bold text-lg ${isOpen ? 'text-primary' : 'text-white'}`}>{faq.q}</span>
+                    <div className={`w-8 h-8 rounded-full border ${isOpen ? 'border-primary text-primary' : 'border-white/10 text-gray-400'} flex items-center justify-center shrink-0 transition-all duration-300`}>
+                      <motion.svg 
+                        animate={{ rotate: isOpen ? 45 : 0 }} 
+                        className="w-4 h-4" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </motion.svg>
+                    </div>
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 pb-6 text-gray-400 leading-relaxed">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )
+            })}
+          </div>
+        </motion.div>
+
+      </div>
+      
       <Footer />
     </main>
   )
