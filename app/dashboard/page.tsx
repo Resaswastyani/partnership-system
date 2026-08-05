@@ -1,14 +1,33 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import { ReferralCard } from '@/components/dashboard/ReferralCard'
 import { ReferralTable } from '@/components/dashboard/ReferralTable'
-import { CURRENT_USER, MOCK_REFERRALS } from '@/lib/mock-data'
+import { MOCK_REFERRALS } from '@/lib/mock-data'
 import { motion } from 'framer-motion'
 
 export default function DashboardPage() {
   const convertedReferrals = MOCK_REFERRALS.filter(r => r.status === 'converted')
-  const pendingReferrals = MOCK_REFERRALS.filter(r => r.status === 'pending')
+  const [user, setUser] = useState<any>(null)
+  const [stats, setStats] = useState({ totalEarnings: 0, totalReferrals: 0 })
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('auth_user')
+    if (userStr) {
+      const parsed = JSON.parse(userStr)
+      setUser(parsed)
+
+      // Fetch stats
+      fetch(`/api/dashboard/stats?userId=${parsed.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setStats(data.stats)
+          }
+        })
+    }
+  }, [])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -33,13 +52,15 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Selamat datang kembali, <span className="text-gradient">Ahmad! 👋</span>
+              Selamat datang kembali, <span className="text-gradient">{user?.name?.split(' ')[0] || 'Member'}! 👋</span>
             </h2>
             <p className="text-gray-400">Berikut ringkasan performa afiliasi Anda minggu ini</p>
           </div>
           <div className="text-left md:text-right bg-white/5 border border-white/10 p-5 rounded-xl backdrop-blur-sm">
-            <p className="text-gray-400 text-sm mb-1 uppercase tracking-wider">Komisi Bulan Ini</p>
-            <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Rp 2.5M</p>
+            <p className="text-gray-400 text-sm mb-1 uppercase tracking-wider">Total Komisi</p>
+            <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+              Rp {(stats.totalEarnings / 1000).toLocaleString()}K
+            </p>
           </div>
         </div>
       </motion.div>
@@ -49,17 +70,16 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Earnings"
-            value={`Rp ${(CURRENT_USER.totalEarnings / 1_000_000).toFixed(1)}M`}
+            value={`Rp ${(stats.totalEarnings / 1000).toLocaleString()}K`}
             subtitle="Dari semua referral"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             color="cyan"
-            trend={{ value: 12, direction: 'up' }}
           />
         </motion.div>
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Pending Komisi"
-            value={`Rp ${(CURRENT_USER.pendingCommissions / 1_000_000).toFixed(1)}M`}
+            value={`Rp 0`}
             subtitle="Menunggu verifikasi"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             color="orange"
@@ -68,21 +88,19 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Referral"
-            value={CURRENT_USER.totalReferrals}
-            subtitle={`${convertedReferrals.length} converted`}
+            value={stats.totalReferrals}
+            subtitle="Pendaftar sukses"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>}
             color="green"
-            trend={{ value: 8, direction: 'up' }}
           />
         </motion.div>
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Conversion Rate"
-            value="34.5%"
-            subtitle="Rata-rata industri 28%"
+            value="N/A"
+            subtitle="Sedang dihitung"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
             color="pink"
-            trend={{ value: 3, direction: 'up' }}
           />
         </motion.div>
       </motion.div>

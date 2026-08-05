@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, phone } = await request.json()
+    const { name, email, password, phone, referralCode } = await request.json()
 
     // Validation
     if (!name || !email || !password || !phone) {
@@ -32,16 +32,25 @@ export async function POST(request: Request) {
       )
     }
 
+    // Resolve referrer if referralCode is provided
+    let referredById = null
+    if (referralCode) {
+      const referrer = await sql`SELECT id FROM users WHERE referral_code = ${referralCode}`
+      if (referrer.length > 0) {
+        referredById = referrer[0].id
+      }
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Generate unique referral code
-    const referralCode = `FBL-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
+    const newReferralCode = `FBL-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
 
     // Insert user
     const result = await sql`
-      INSERT INTO users (name, email, password, phone, role, referral_code)
-      VALUES (${name}, ${email}, ${hashedPassword}, ${phone}, 'user', ${referralCode})
+      INSERT INTO users (name, email, password, phone, role, referral_code, referred_by_id)
+      VALUES (${name}, ${email}, ${hashedPassword}, ${phone}, 'user', ${newReferralCode}, ${referredById})
       RETURNING id, name, email, role, referral_code, created_at
     `
 
