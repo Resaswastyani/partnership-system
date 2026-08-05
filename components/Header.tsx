@@ -43,16 +43,10 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex gap-8 items-center">
             <Link
-              href="/#features"
+              href="/products"
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
-              Produk
-            </Link>
-            <Link
-              href="/#pricing"
-              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
-            >
-              Harga
+              Produk & Harga
             </Link>
             <Link
               href="/#how-it-works"
@@ -108,11 +102,8 @@ export function Header() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <nav className="lg:hidden py-4 space-y-2 border-t border-white/5">
-            <Link href="/#features" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg text-sm font-medium transition-colors">
-              Produk
-            </Link>
-            <Link href="/#pricing" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg text-sm font-medium transition-colors">
-              Harga
+            <Link href="/products" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg text-sm font-medium transition-colors">
+              Produk & Harga
             </Link>
             <Link href="/#how-it-works" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg text-sm font-medium transition-colors">
               Cara Kerja
