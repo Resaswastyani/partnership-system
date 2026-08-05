@@ -27,7 +27,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex gap-8">
+          <nav className="hidden lg:flex gap-8 items-center">
             <Link
               href="/#features"
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
@@ -52,10 +52,20 @@ export function Header() {
             >
               FAQ
             </Link>
+            
+            {/* Demo Admin Button inside Desktop Nav */}
+            <div className="w-px h-6 bg-white/10 mx-2"></div>
+            <Link
+              href="/admin"
+              className="flex items-center gap-2 px-4 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold rounded-full hover:bg-amber-500/20 transition-all group"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 group-hover:animate-ping" />
+              Demo Admin
+            </Link>
           </nav>
 
           {/* CTA Buttons */}
-          <div className="hidden md:flex gap-4 items-center">
+          <div className="hidden lg:flex gap-4 items-center">
             <Link
               href="/login"
               className="px-6 py-2 text-gray-300 text-sm font-medium hover:text-white hover:bg-white/5 rounded-full transition-all"
@@ -73,17 +83,17 @@ export function Header() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 hover:bg-white/5 rounded-lg text-gray-300 hover:text-white transition-colors"
+            className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-gray-300 hover:text-white transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
             </svg>
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-4 space-y-2 border-t border-white/5">
+          <nav className="lg:hidden py-4 space-y-2 border-t border-white/5">
             <Link href="/#features" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg text-sm font-medium transition-colors">
               Produk
             </Link>
@@ -96,11 +106,22 @@ export function Header() {
             <Link href="/#faq" className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg text-sm font-medium transition-colors">
               FAQ
             </Link>
-            <div className="pt-4 flex flex-col gap-2 px-4">
-              <Link href="/login" className="w-full py-2 text-center text-white text-sm font-medium border border-white/10 rounded-full hover:bg-white/5 transition-colors">
+            
+            <div className="px-4 py-2">
+              <Link
+                href="/admin"
+                className="flex items-center justify-center gap-2 w-full py-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-bold rounded-xl hover:bg-amber-500/20 transition-all"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                Lihat Demo Admin
+              </Link>
+            </div>
+
+            <div className="pt-2 flex flex-col gap-2 px-4">
+              <Link href="/login" className="w-full py-2.5 text-center text-white text-sm font-medium border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
                 Login
               </Link>
-              <Link href="/register" className="w-full py-2 text-center bg-primary text-white text-sm font-bold rounded-full hover:bg-primary/90 transition-colors">
+              <Link href="/register" className="w-full py-2.5 text-center bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors">
                 Daftar Sekarang
               </Link>
             </div>
