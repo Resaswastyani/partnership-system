@@ -21,11 +21,13 @@ export default function LoginPage() {
     // Simulate API call
     setTimeout(() => {
       if (email && password) {
-        // Mock authentication - redirect to dashboard
-        localStorage.setItem('auth_user', JSON.stringify({ email, role: 'user' }))
-        router.push('/dashboard')
+        // Admin detection: admin@fbl.com or admin@forexforbetterliving.com → /admin
+        const isAdmin = email.includes('admin@')
+        const role = isAdmin ? 'admin' : 'user'
+        localStorage.setItem('auth_user', JSON.stringify({ email, role }))
+        router.push(isAdmin ? '/admin' : '/dashboard')
       } else {
-        setError('Please fill in all fields')
+        setError('Email dan password harus diisi')
       }
       setLoading(false)
     }, 1000)
@@ -135,10 +137,19 @@ export default function LoginPage() {
               </button>
 
               {/* Demo Credentials */}
-              <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
-                <p className="text-gray-400 text-xs mb-2">Demo Credentials:</p>
-                <p className="text-primary text-xs font-mono">Email: affiliate@forexforbetterliving.com</p>
-                <p className="text-primary text-xs font-mono mt-1">Password: demo123</p>
+              <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl space-y-3">
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">🔑 Demo Credentials</p>
+                <div className="space-y-1">
+                  <p className="text-gray-500 text-[10px] uppercase tracking-wider">👤 Member</p>
+                  <p className="text-primary text-xs font-mono">affiliate@fbl.com</p>
+                  <p className="text-primary text-xs font-mono">demo123</p>
+                </div>
+                <div className="h-px bg-white/5" />
+                <div className="space-y-1">
+                  <p className="text-gray-500 text-[10px] uppercase tracking-wider">⚙️ Admin FBL</p>
+                  <p className="text-amber-400 text-xs font-mono">admin@fbl.com</p>
+                  <p className="text-amber-400 text-xs font-mono">admin123</p>
+                </div>
               </div>
             </form>
 

@@ -2,26 +2,29 @@
 
 import { Header } from '@/components/Header'
 import { HeroSection } from '@/components/HeroSection'
-import { ProductShowcase } from '@/components/ProductShowcase'
+import { FeaturesGrid } from '@/components/FeaturesGrid'
 import { HowItWorks } from '@/components/HowItWorks'
+import { Testimonials } from '@/components/Testimonials'
+import { FAQ } from '@/components/FAQ'
+import { CTASection } from '@/components/CTASection'
 import { Footer } from '@/components/Footer'
 import { motion } from 'framer-motion'
 
 export default function Home() {
   return (
-    <motion.main 
+    <motion.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="w-full overflow-x-hidden bg-background"
+      transition={{ duration: 0.6 }}
+      className="w-full overflow-x-hidden bg-[#080b14]"
     >
       <Header />
-      
-      {/* Setiap section (Hero, Product, HowItWorks, Footer) di bawah ini sudah memiliki
-          animasi "whileInView" (animasi pas scroll) di dalam komponen masing-masing. */}
       <HeroSection />
-      <ProductShowcase />
+      <FeaturesGrid />
       <HowItWorks />
+      <Testimonials />
+      <FAQ />
+      <CTASection />
       <Footer />
     </motion.main>
   )
