@@ -1,225 +1,342 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
+import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion'
+import { useRef, useState, useEffect } from 'react'
 
-export function HowItWorks() {
-  const steps = [
-    {
-      number: '1',
-      title: 'Daftar Gratis',
-      description: 'Buat akun FBL Partnership dalam hitungan menit. Tidak ada biaya pendaftaran atau komitmen jangka panjang.',
-      icon: '📝'
-    },
-    {
-      number: '2',
-      title: 'Dapatkan Kode',
-      description: 'Sistem kami otomatis membuat kode unik Anda. Copy dan bagikan link referral ke audience Anda.',
-      icon: '🔗'
-    },
-    {
-      number: '3',
-      title: 'Orang Membeli',
-      description: 'Ketika orang menggunakan link Anda dan membeli produk FBL, Anda mendapat credit di sistem kami.',
-      icon: '🛍️'
-    },
-    {
-      number: '4',
-      title: 'Terima Komisi',
-      description: 'Dapatkan komisi hingga 5% tergantung produk yang terjual. Tracking real-time di dashboard Anda.',
-      icon: '💰'
+const STEPS = [
+  {
+    number: '01',
+    title: 'DAFTAR GRATIS',
+    subtitle: 'Create Your Account',
+    description: 'Buat akun affiliate FBL dalam hitungan menit. Tidak ada biaya pendaftaran, tidak ada komitmen. Cukup email dan password.',
+    color: '#00d2ff',
+    glow: 'rgba(0, 210, 255, 0.25)',
+    icon: (
+      <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
+        <circle cx="32" cy="22" r="12" stroke="currentColor" strokeWidth="2" />
+        <path d="M8 56c0-13.255 10.745-24 24-24s24 10.745 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    number: '02',
+    title: 'DAPATKAN LINK',
+    subtitle: 'Get Your Referral Code',
+    description: 'Sistem kami otomatis menghasilkan link referral unik milik Anda. Satu link, tracking semua — klik, daftar, dan konversi.',
+    color: '#a855f7',
+    glow: 'rgba(168, 85, 247, 0.25)',
+    icon: (
+      <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
+        <path d="M24 40l-8 8M40 24l8-8M29 35l6-6M20 44l-4 4M44 16l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M38 26a10 10 0 010 14l-4 4a10 10 0 01-14 0v0a10 10 0 010-14l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M26 38a10 10 0 010-14l4-4a10 10 0 0114 0v0a10 10 0 010 14l-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    number: '03',
+    title: 'BAGIKAN & PROMOSI',
+    subtitle: 'Share & Promote',
+    description: 'Bagikan ke komunitas trading, media sosial, atau WhatsApp group. Materi promosi sudah tersedia di dashboard Anda.',
+    color: '#f59e0b',
+    glow: 'rgba(245, 158, 11, 0.25)',
+    icon: (
+      <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
+        <circle cx="12" cy="32" r="6" stroke="currentColor" strokeWidth="2" />
+        <circle cx="52" cy="16" r="6" stroke="currentColor" strokeWidth="2" />
+        <circle cx="52" cy="48" r="6" stroke="currentColor" strokeWidth="2" />
+        <path d="M18 29l28-10M18 35l28 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    number: '04',
+    title: 'TERIMA KOMISI',
+    subtitle: 'Earn Real Money',
+    description: 'Setiap pembelian lewat link Anda menghasilkan komisi hingga 5%. Cair otomatis ke rekening bank Anda setiap tanggal 1.',
+    color: '#10b981',
+    glow: 'rgba(16, 185, 129, 0.25)',
+    icon: (
+      <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
+        <rect x="8" y="20" width="48" height="32" rx="4" stroke="currentColor" strokeWidth="2" />
+        <path d="M8 28h48" stroke="currentColor" strokeWidth="2" />
+        <path d="M20 40h8M36 40h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M32 8v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M26 12l6-6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+]
+
+// ── Cursor Glow Component ─────────────────────────────────────────
+function CursorGlow({ color }: { color: string }) {
+  const x = useMotionValue(-200)
+  const y = useMotionValue(-200)
+  const springX = useSpring(x, { stiffness: 80, damping: 20 })
+  const springY = useSpring(y, { stiffness: 80, damping: 20 })
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      x.set(e.clientX)
+      y.set(e.clientY)
     }
-  ]
-
-  const features = [
-    {
-      title: 'Referral Link Otomatis',
-      description: 'Sistem kami generate link unik untuk setiap member dengan tracking akurat',
-      icon: '⚡'
-    },
-    {
-      title: 'Real-time Dashboard',
-      description: 'Pantau semua referral, conversion, dan earnings Anda secara live',
-      icon: '📊'
-    },
-    {
-      title: 'Komisi Kompetitif',
-      description: 'Komisi hingga 5% per penjualan dengan berbagai tingkat komisi per produk',
-      icon: '💎'
-    },
-    {
-      title: 'Pembayaran Tepat Waktu',
-      description: 'Terima pembayaran komisi Anda setiap bulan via transfer bank',
-      icon: '🏦'
-    },
-    {
-      title: 'Support 24/7',
-      description: 'Tim support kami siap membantu Anda kapan saja melalui chat dan email',
-      icon: '🤝'
-    },
-    {
-      title: 'Materi Marketing',
-      description: 'Akses ke banner, template, dan content marketing untuk mempromosikan produk',
-      icon: '📢'
-    }
-  ]
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2 }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-  }
+    window.addEventListener('mousemove', onMove)
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [x, y])
 
   return (
-    <div className="py-24 px-4 sm:px-6 lg:px-8 relative bg-background">
-      {/* Background ambient light */}
-      <div className="absolute top-[20%] left-0 w-full h-[500px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
+    <motion.div
+      className="fixed inset-0 pointer-events-none z-0"
+      style={{ opacity: 0.6 }}
+    >
+      <motion.div
+        style={{
+          position: 'fixed',
+          left: springX,
+          top: springY,
+          translateX: '-50%',
+          translateY: '-50%',
+          width: 500,
+          height: 500,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${color}30 0%, transparent 70%)`,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+    </motion.div>
+  )
+}
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="max-w-7xl mx-auto mb-32 relative z-10">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={itemVariants}
-          className="text-center mb-20 space-y-4"
+// ── Single Step Panel ─────────────────────────────────────────────
+function StepPanel({ step, index, isActive }: { step: typeof STEPS[0]; index: number; isActive: boolean }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative h-screen flex items-center justify-center sticky top-0"
+    >
+      {/* Full panel */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
+
+        {/* Left: Giant number + text */}
+        <motion.div
+          initial={{ opacity: 0, x: -60 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8 }}
         >
-          <div className="inline-block px-4 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
-            <p className="text-accent text-sm font-semibold tracking-wider">CARA KERJA</p>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white">
-            Langkah Mudah Mulai <span className="text-gradient">Earning</span>
-          </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto mt-4">
-            Sistem kami dirancang untuk semudah mungkin. Ikuti 4 langkah sederhana dan mulai hasilkan komisi.
-          </p>
-        </motion.div>
-
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid md:grid-cols-4 gap-8"
-        >
-          {steps.map((step, index) => (
-            <motion.div variants={itemVariants} key={index} className="relative group">
-              {/* Connection line */}
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-12 -right-4 w-8 h-[2px] bg-gradient-to-r from-primary to-transparent opacity-30 group-hover:opacity-100 transition-opacity"></div>
-              )}
-
-              {/* Card */}
-              <div className="glass-card glass-card-hover rounded-2xl p-8 h-full flex flex-col glow-effect">
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="text-5xl group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
-                    {/* Step Number Badge */}
-                    <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-lg shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                      {step.number}
-                    </div>
-                  </div>
-
-                  <h3 className="text-white font-bold text-xl mb-3">{step.title}</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
-
-      {/* Features Section */}
-      <section className="max-w-7xl mx-auto relative z-10 mb-32">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={itemVariants}
-          className="text-center mb-20 space-y-4"
-        >
-          <div className="inline-block px-4 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
-            <p className="text-emerald-400 text-sm font-semibold tracking-wider">KEUNGGULAN KAMI</p>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white">
-            Fitur-Fitur <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">Unggulan</span>
-          </h2>
-        </motion.div>
-
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          {features.map((feature, index) => (
-            <motion.div
-              variants={itemVariants}
-              key={index}
-              className="group glass-card rounded-2xl p-8 hover:bg-white/[0.04] transition-all duration-300 hover:border-emerald-500/30 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)]"
+          {/* Step number */}
+          <div className="relative mb-6 select-none">
+            <span
+              className="text-[8rem] sm:text-[10rem] lg:text-[14rem] font-black leading-none tracking-tighter"
+              style={{
+                WebkitTextStroke: `2px ${step.color}30`,
+                color: 'transparent',
+              }}
             >
-              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300 bg-emerald-500/10 w-16 h-16 rounded-2xl flex items-center justify-center border border-emerald-500/20">{feature.icon}</div>
-              <h3 className="text-white font-bold text-xl mb-3">{feature.title}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
+              {step.number}
+            </span>
+            <motion.span
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute inset-0 text-[8rem] sm:text-[10rem] lg:text-[14rem] font-black leading-none tracking-tighter bg-clip-text text-transparent"
+              style={{
+                backgroundImage: `linear-gradient(135deg, ${step.color}, ${step.color}80)`,
+                WebkitBackgroundClip: 'text',
+              }}
+            >
+              {step.number}
+            </motion.span>
+          </div>
 
-      {/* CTA Section */}
-      <section className="max-w-5xl mx-auto relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="relative rounded-3xl p-1 md:p-[2px] bg-gradient-to-r from-primary via-accent to-primary background-animate overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-30 blur-2xl" />
-          <div className="relative bg-background rounded-[22px] p-10 md:p-16 text-center z-10">
-            <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Siap untuk Mulai Earning?
-            </h3>
-            <p className="text-gray-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
-              Bergabunglah dengan ribuan affiliate partner FBL dan mulai hasilkan komisi nyata hari ini. Proses mudah, gratis, dan transparan.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
-              <Link
-                href="/register"
-                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-full hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] transition-all duration-300 hover:scale-105"
-              >
-                Daftar Sekarang - Gratis!
-              </Link>
-              <Link
-                href="/login"
-                className="w-full sm:w-auto px-8 py-4 border border-white/20 bg-white/5 text-white font-bold rounded-full hover:bg-white/10 transition-colors"
-              >
-                Sudah Punya Akun? Login
-              </Link>
-            </div>
+          {/* Subtitle */}
+          <p className="text-sm font-bold uppercase tracking-[0.3em] mb-3" style={{ color: step.color }}>
+            — {step.subtitle}
+          </p>
+
+          {/* Title */}
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white uppercase leading-none tracking-tight mb-6">
+            {step.title}
+          </h2>
+
+          {/* Description */}
+          <p className="text-gray-400 text-lg leading-relaxed max-w-md">
+            {step.description}
+          </p>
+
+          {/* Progress indicator */}
+          <div className="flex items-center gap-3 mt-10">
+            {STEPS.map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  width: i === index ? 40 : 8,
+                  opacity: i === index ? 1 : 0.3,
+                }}
+                transition={{ duration: 0.3 }}
+                className="h-1 rounded-full"
+                style={{ background: step.color }}
+              />
+            ))}
           </div>
         </motion.div>
-      </section>
-      
-      <style>{`
-        .background-animate {
-          background-size: 400%;
-          animation: gradient 5s ease infinite;
-        }
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
-    </div>
+
+        {/* Right: Interactive icon card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="relative flex justify-center"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        >
+          {/* Outer ring */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            className="absolute inset-0 rounded-full border border-dashed opacity-20"
+            style={{ borderColor: step.color }}
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+            className="absolute inset-6 rounded-full border border-dashed opacity-10"
+            style={{ borderColor: step.color }}
+          />
+
+          {/* Main card */}
+          <motion.div
+            animate={{
+              y: hovered ? -12 : 0,
+              scale: hovered ? 1.04 : 1,
+              boxShadow: hovered
+                ? `0 40px 100px ${step.glow}, 0 0 60px ${step.glow}`
+                : `0 20px 60px ${step.glow}40`,
+            }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="relative w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-3xl flex items-center justify-center border"
+            style={{
+              background: `radial-gradient(circle at 30% 30%, ${step.glow}40, #0c0f1d)`,
+              borderColor: `${step.color}20`,
+            }}
+          >
+            {/* Glowing orb background */}
+            <div
+              className="absolute inset-0 rounded-3xl opacity-30"
+              style={{
+                background: `radial-gradient(circle at center, ${step.glow}, transparent 70%)`,
+              }}
+            />
+
+            {/* Icon */}
+            <motion.div
+              animate={{ rotate: hovered ? 10 : 0 }}
+              transition={{ duration: 0.3 }}
+              className="relative z-10 w-24 h-24 sm:w-28 sm:h-28"
+              style={{ color: step.color }}
+            >
+              {step.icon}
+            </motion.div>
+
+            {/* Corner accents */}
+            <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 rounded-tl-lg opacity-50" style={{ borderColor: step.color }} />
+            <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 rounded-tr-lg opacity-50" style={{ borderColor: step.color }} />
+            <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 rounded-bl-lg opacity-50" style={{ borderColor: step.color }} />
+            <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 rounded-br-lg opacity-50" style={{ borderColor: step.color }} />
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* Ambient glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 60% 50% at 50% 50%, ${step.glow}15, transparent)`,
+        }}
+      />
+    </motion.div>
+  )
+}
+
+// ── Main Component ────────────────────────────────────────────────
+export function HowItWorks() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [activeStep, setActiveStep] = useState(0)
+  const { scrollYProgress } = useScroll({ target: containerRef })
+
+  // Map scroll to step index
+  const stepProgress = useTransform(scrollYProgress, [0, 1], [0, STEPS.length - 1])
+
+  useEffect(() => {
+    const unsub = stepProgress.on('change', (v) => {
+      setActiveStep(Math.min(Math.floor(v), STEPS.length - 1))
+    })
+    return unsub
+  }, [stepProgress])
+
+  return (
+    <section
+      id="how-it-works"
+      ref={containerRef}
+      className="relative bg-[#080b14]"
+      style={{ height: `${STEPS.length * 100}vh` }}
+    >
+      {/* ── Section Label (fixed while scrolling through steps) ── */}
+      <div className="sticky top-0 z-50 pointer-events-none">
+        <div className="absolute top-8 left-1/2 -translate-x-1/2">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex items-center gap-3 px-5 py-2 rounded-full border border-white/5 bg-[rgba(255,255,255,0.03)] backdrop-blur-md"
+          >
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: STEPS[activeStep].color }} />
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+              Cara Kerja — Langkah {activeStep + 1} / {STEPS.length}
+            </span>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* ── Cursor glow follows active step color ── */}
+      <CursorGlow color={STEPS[activeStep].color} />
+
+      {/* ── Sticky Steps ── */}
+      <div className="relative">
+        {STEPS.map((step, index) => (
+          <StepPanel
+            key={step.number}
+            step={step}
+            index={index}
+            isActive={activeStep === index}
+          />
+        ))}
+      </div>
+
+      {/* ── Scroll hint (only on first step) ── */}
+      <AnimatePresence>
+        {activeStep === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"
+          >
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-600">Scroll</span>
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-5 h-8 rounded-full border border-white/10 flex items-start justify-center p-1"
+            >
+              <div className="w-1 h-2 rounded-full bg-gray-500" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
   )
 }
