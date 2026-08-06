@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 
 export default function ProductsPage() {
   const containerRef = useRef(null)
@@ -20,6 +20,18 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
+  // New: product type filter
+  const [filter, setFilter] = useState<'all' | 'ea' | 'position'>('all')
+  // Analytics helper
+  const trackFilterUsage = useCallback((selected: string) => {
+    fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'filter_click', filter: selected })
+    })
+    const existing = Number(localStorage.getItem('filter_' + selected) || '0')
+    localStorage.setItem('filter_' + selected, String(existing + 1))
+  }, [])
   
   // Checkout Modal State
   const [checkoutModal, setCheckoutModal] = useState({ isOpen: false, productId: '' })
@@ -122,6 +134,13 @@ export default function ProductsPage() {
   }
 
 
+  const filteredProducts = products.filter(p => {
+    if (filter === 'all') return true
+    if (filter === 'ea') return p.name.toLowerCase().includes('ea')
+    if (filter === 'position') return p.name.toLowerCase().includes('position')
+    return true
+  })
+  
   const faqs = [
     {
       q: 'Bagaimana cara mendapatkan akses produk setelah membeli?',
@@ -186,11 +205,28 @@ export default function ProductsPage() {
           </motion.p>
         </motion.div>
 
+        {/* ── FILTER BUTTONS ── */}
+        <div className="flex gap-4 justify-center mb-8">
+          {['all', 'ea', 'position'].map(key => (
+            <button
+              key={key}
+              className={`px-4 py-2 rounded-xl border ${filter === key ? 'bg-primary/20 border-primary' : 'bg-white/5 border-white/10'}`}
+              onClick={() => {
+                setFilter(key as any)
+                trackFilterUsage(key)
+              }}
+              aria-pressed={filter === key}
+            >
+              {key === 'all' ? 'All' : key === 'ea' ? 'EA' : 'Position Size'}
+            </button>
+          ))}
+        </div>
+        
         {/* ── PRODUCTS GRID ── */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-40">
           {loading ? (
             <div className="col-span-full text-center text-gray-400 py-10 animate-pulse">Memuat produk dari database...</div>
-          ) : products.map((product, index) => (
+          ) : filteredProducts.map((product, index) => (
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
