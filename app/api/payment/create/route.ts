@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     // Generate unique order_id
-    const orderId = `FBL-${Date.now()}-${finalBuyerId.substring(0,8)}`
+    const orderId = `FBL-${Date.now()}-${String(finalBuyerId).substring(0,8)}`
 
     // Create order in DB
     await sql`
