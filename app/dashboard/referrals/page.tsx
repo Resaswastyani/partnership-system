@@ -2,13 +2,34 @@
 
 import { ReferralTable } from '@/components/dashboard/ReferralTable'
 import { StatsCard } from '@/components/dashboard/StatsCard'
-import { MOCK_REFERRALS } from '@/lib/mock-data'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 export default function ReferralsPage() {
-  const convertedCount = MOCK_REFERRALS.filter(r => r.status === 'converted').length
-  const pendingCount = MOCK_REFERRALS.filter(r => r.status === 'pending').length
-  const totalCommission = MOCK_REFERRALS.filter(r => r.status === 'converted').reduce((sum, r) => sum + r.commission, 0)
+  const [user, setUser] = useState<any>(null)
+  const [referrals, setReferrals] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('auth_user')
+    if (userStr) {
+      const parsed = JSON.parse(userStr)
+      setUser(parsed)
+
+      fetch(`/api/dashboard/referrals?userId=${parsed.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setReferrals(data.referrals)
+          }
+          setLoading(false)
+        })
+    }
+  }, [])
+
+  const convertedCount = referrals.filter(r => r.status === 'converted').length
+  const pendingCount = referrals.filter(r => r.status === 'pending').length
+  const totalCommission = referrals.filter(r => r.status === 'converted').reduce((sum, r) => sum + r.commission, 0)
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -38,7 +59,7 @@ export default function ReferralsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Referral"
-            value={MOCK_REFERRALS.length}
+            value={referrals.length}
             subtitle="Sepanjang waktu"
             icon="🔗"
             color="cyan"
@@ -48,7 +69,7 @@ export default function ReferralsPage() {
           <StatsCard
             title="Berhasil Konversi"
             value={convertedCount}
-            subtitle={`${((convertedCount / MOCK_REFERRALS.length) * 100).toFixed(1)}% conversion rate`}
+            subtitle={`${referrals.length ? ((convertedCount / referrals.length) * 100).toFixed(1) : 0}% conversion rate`}
             icon="✅"
             color="green"
           />
@@ -70,7 +91,7 @@ export default function ReferralsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
           <div className="flex gap-2 flex-wrap">
             <button className="px-5 py-2.5 bg-primary/20 text-white border border-primary/50 shadow-[0_0_15px_rgba(139,92,246,0.2)] rounded-xl font-bold text-sm transition-all hover:bg-primary/30">
-              Semua ({MOCK_REFERRALS.length})
+              Semua ({referrals.length})
             </button>
             <button className="px-5 py-2.5 bg-white/5 text-gray-400 border border-white/10 rounded-xl font-medium text-sm hover:bg-white/10 hover:text-white transition-all">
               Berhasil ({convertedCount})
@@ -84,7 +105,7 @@ export default function ReferralsPage() {
 
       {/* Referral Table */}
       <motion.div variants={itemVariants}>
-        <ReferralTable />
+        <ReferralTable data={referrals} />
       </motion.div>
 
       {/* Tips */}

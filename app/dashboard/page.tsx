@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react'
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import { ReferralCard } from '@/components/dashboard/ReferralCard'
 import { ReferralTable } from '@/components/dashboard/ReferralTable'
-import { MOCK_REFERRALS } from '@/lib/mock-data'
 import { motion } from 'framer-motion'
 
 export default function DashboardPage() {
-  const convertedReferrals = MOCK_REFERRALS.filter(r => r.status === 'converted')
   const [user, setUser] = useState<any>(null)
   const [stats, setStats] = useState({ totalEarnings: 0, totalReferrals: 0, balance: 0 })
+  const [referrals, setReferrals] = useState<any[]>([])
+  const [productCommissions, setProductCommissions] = useState<any[]>([])
 
   useEffect(() => {
     const userStr = localStorage.getItem('auth_user')
@@ -19,13 +19,21 @@ export default function DashboardPage() {
       setUser(parsed)
 
       // Fetch stats
-      fetch(`/api/dashboard/stats?userId=${parsed.id}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setStats(data.stats)
-          }
-        })
+      Promise.all([
+        fetch(`/api/dashboard/stats?userId=${parsed.id}`).then(res => res.json()),
+        fetch(`/api/dashboard/referrals?userId=${parsed.id}`).then(res => res.json()),
+        fetch(`/api/dashboard/commissions?userId=${parsed.id}`).then(res => res.json())
+      ]).then(([statsData, referralsData, commsData]) => {
+        if (statsData.success) {
+          setStats(statsData.stats)
+        }
+        if (referralsData.success) {
+          setReferrals(referralsData.referrals)
+        }
+        if (commsData.success) {
+          setProductCommissions(commsData.productCommissions)
+        }
+      })
     }
   }, [])
 
@@ -121,27 +129,18 @@ export default function DashboardPage() {
               Produk Terlaris
             </h3>
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 rounded-xl hover:bg-white/5 transition-colors">
-                <div>
-                  <p className="text-white text-sm font-semibold">EA Robot</p>
-                  <p className="text-gray-400 text-xs mt-0.5">15 penjualan</p>
+              {productCommissions.slice(0, 3).map((p, idx) => (
+                <div key={idx} className="flex justify-between items-center p-3 rounded-xl hover:bg-white/5 transition-colors">
+                  <div>
+                    <p className="text-white text-sm font-semibold">{p.name}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{p.salesCount} penjualan</p>
+                  </div>
+                  <p className="text-emerald-400 font-bold">Rp {(p.totalCommission / 1_000).toLocaleString()}K</p>
                 </div>
-                <p className="text-emerald-400 font-bold">Rp 4.5M</p>
-              </div>
-              <div className="flex justify-between items-center p-3 rounded-xl hover:bg-white/5 transition-colors">
-                <div>
-                  <p className="text-white text-sm font-semibold">Materi Trading</p>
-                  <p className="text-gray-400 text-xs mt-0.5">12 penjualan</p>
-                </div>
-                <p className="text-primary font-bold">Rp 1.2M</p>
-              </div>
-              <div className="flex justify-between items-center p-3 rounded-xl hover:bg-white/5 transition-colors">
-                <div>
-                  <p className="text-white text-sm font-semibold">Jurnal Trading</p>
-                  <p className="text-gray-400 text-xs mt-0.5">8 penjualan</p>
-                </div>
-                <p className="text-amber-400 font-bold">Rp 960K</p>
-              </div>
+              ))}
+              {productCommissions.length === 0 && (
+                <p className="text-gray-400 text-sm p-3 text-center">Belum ada penjualan</p>
+              )}
             </div>
           </motion.div>
 
@@ -152,36 +151,35 @@ export default function DashboardPage() {
               Aktivitas Terbaru
             </h3>
             <div className="space-y-4">
-              <div className="flex gap-4 items-start p-3 rounded-xl hover:bg-white/5 transition-colors border-b border-white/5 pb-4">
-                <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 text-white">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+              {referrals.slice(0, 3).map((r, idx) => (
+                <div key={idx} className="flex gap-4 items-start p-3 rounded-xl hover:bg-white/5 transition-colors border-b border-white/5 pb-4">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center border ${
+                    r.status === 'converted' 
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' 
+                      : 'bg-white/5 border-white/10 text-white'
+                  }`}>
+                    {r.status === 'converted' ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white text-sm font-semibold">
+                      {r.status === 'converted' ? 'Komisi diterima' : 'Referral baru'}
+                    </p>
+                    <p className="text-gray-400 text-xs mt-0.5">
+                      {r.status === 'converted' ? `Rp ${r.commission.toLocaleString()} dari referral` : `${r.refereeName} beli ${r.productName}`}
+                    </p>
+                    <p className="text-gray-500 text-[10px] mt-1.5 font-mono">
+                      {new Date(r.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-white text-sm font-semibold">Referral berhasil</p>
-                  <p className="text-gray-400 text-xs mt-0.5">Eka Prasetya beli Materi Trading</p>
-                  <p className="text-gray-500 text-[10px] mt-1.5 font-mono">2 JAM LALU</p>
-                </div>
-              </div>
-              <div className="flex gap-4 items-start p-3 rounded-xl hover:bg-white/5 transition-colors border-b border-white/5 pb-4">
-                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center border border-emerald-500/20 text-emerald-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                </div>
-                <div className="flex-1">
-                  <p className="text-white text-sm font-semibold">Komisi diterima</p>
-                  <p className="text-gray-400 text-xs mt-0.5">Rp 8,970 dari referral</p>
-                  <p className="text-gray-500 text-[10px] mt-1.5 font-mono">1 HARI LALU</p>
-                </div>
-              </div>
-              <div className="flex gap-4 items-start p-3 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center border border-amber-500/20 text-amber-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-                </div>
-                <div className="flex-1">
-                  <p className="text-white text-sm font-semibold">Milestone tercapai</p>
-                  <p className="text-gray-400 text-xs mt-0.5">Anda mencapai 45 referral!</p>
-                  <p className="text-gray-500 text-[10px] mt-1.5 font-mono">5 HARI LALU</p>
-                </div>
-              </div>
+              ))}
+              {referrals.length === 0 && (
+                <p className="text-gray-400 text-sm p-3 text-center">Belum ada aktivitas</p>
+              )}
             </div>
           </motion.div>
         </motion.div>
@@ -189,7 +187,7 @@ export default function DashboardPage() {
 
       {/* Referral Table */}
       <motion.div variants={itemVariants}>
-        <ReferralTable />
+        <ReferralTable data={referrals.slice(0, 5)} />
       </motion.div>
 
       {/* Call to Action */}

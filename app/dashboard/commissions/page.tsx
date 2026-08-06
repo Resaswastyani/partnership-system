@@ -4,17 +4,30 @@ import { StatsCard } from '@/components/dashboard/StatsCard'
 import { CURRENT_USER } from '@/lib/mock-data'
 import { motion } from 'framer-motion'
 
+import { useState, useEffect } from 'react'
+
 export default function CommissionsPage() {
-  const monthlyData = [
-    { month: 'Jan', amount: 850_000, status: 'Paid' },
-    { month: 'Feb', amount: 1_120_000, status: 'Paid' },
-    { month: 'Mar', amount: 950_000, status: 'Paid' },
-    { month: 'Apr', amount: 1_450_000, status: 'Paid' },
-    { month: 'May', amount: 1_290_000, status: 'Paid' },
-    { month: 'Jun', amount: 1_680_000, status: 'Paid' },
-    { month: 'Jul', amount: 890_000, status: 'Pending' },
-    { month: 'Aug', amount: 1_220_000, status: 'Pending' },
-  ]
+  const [data, setData] = useState<any>({
+    stats: { totalEarnings: 0, pendingCommissions: 0, averageCommission: 0 },
+    monthlyData: [],
+    productCommissions: []
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('auth_user')
+    if (userStr) {
+      const parsed = JSON.parse(userStr)
+      fetch(`/api/dashboard/commissions?userId=${parsed.id}`)
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.success) {
+            setData(resData)
+          }
+          setLoading(false)
+        })
+    }
+  }, [])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -44,7 +57,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Komisi Diterima"
-            value={`Rp ${(CURRENT_USER.totalEarnings / 1_000_000).toFixed(1)}M`}
+            value={`Rp ${(data.stats.totalEarnings / 1_000_000).toFixed(1)}M`}
             subtitle="Semua waktu"
             icon="✅"
             color="green"
@@ -53,7 +66,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Komisi Pending"
-            value={`Rp ${(CURRENT_USER.pendingCommissions / 1_000_000).toFixed(1)}M`}
+            value={`Rp ${(data.stats.pendingCommissions / 1_000_000).toFixed(1)}M`}
             subtitle="Menunggu verifikasi"
             icon="⏳"
             color="orange"
@@ -62,7 +75,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Average Commission"
-            value={`Rp ${(CURRENT_USER.totalEarnings / 5 / 1_000_000).toFixed(2)}M`}
+            value={`Rp ${(data.stats.averageCommission / 1_000_000).toFixed(2)}M`}
             subtitle="Per referral"
             icon="📊"
             color="cyan"
@@ -80,35 +93,35 @@ export default function CommissionsPage() {
           </h3>
           
           <div className="space-y-4 relative z-10">
-            {monthlyData.map((data, idx) => (
+            {data.monthlyData.map((mData: any, idx: number) => (
               <div key={idx} className="flex items-center gap-4 group">
                 <div className="w-12 text-right">
-                  <p className="text-gray-400 text-sm font-semibold group-hover:text-white transition-colors">{data.month}</p>
+                  <p className="text-gray-400 text-sm font-semibold group-hover:text-white transition-colors">{mData.month}</p>
                 </div>
                 <div className="flex-1">
                   <div className="h-10 bg-white/5 rounded-xl overflow-hidden flex items-center border border-white/5 group-hover:border-white/10 transition-colors">
                     <motion.div
                       initial={{ width: 0 }}
-                      whileInView={{ width: `${(data.amount / 2_000_000) * 100}%` }}
+                      whileInView={{ width: `${Math.min((mData.amount / 2_000_000) * 100, 100)}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 1, delay: idx * 0.1 }}
                       className={`h-full flex items-center px-4 text-white font-bold text-sm shadow-[0_0_15px_rgba(0,0,0,0.2)] ${
-                        data.status === 'Paid'
+                        mData.status === 'Paid'
                           ? 'bg-gradient-to-r from-emerald-500/80 to-emerald-400'
                           : 'bg-gradient-to-r from-amber-500/80 to-amber-400'
                       }`}
                     >
-                      Rp {(data.amount / 1_000_000).toFixed(1)}M
+                      Rp {(mData.amount / 1_000_000).toFixed(1)}M
                     </motion.div>
                   </div>
                 </div>
                 <div className="w-24 text-right">
                   <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${
-                    data.status === 'Paid' 
+                    mData.status === 'Paid' 
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
                       : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                   }`}>
-                    {data.status === 'Paid' ? 'Berhasil' : 'Menunggu'}
+                    {mData.status === 'Paid' ? 'Berhasil' : 'Menunggu'}
                   </span>
                 </div>
               </div>
@@ -175,37 +188,15 @@ export default function CommissionsPage() {
         </h3>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1">
-            <p className="text-gray-400 text-sm mb-3 h-10 font-medium">EA Robot Trading FBL</p>
-            <p className="text-white font-bold text-3xl mb-2">Rp 4.5M</p>
-            <p className="text-emerald-400 text-sm font-semibold flex items-center gap-1">
-              <span>✓</span> 15 penjualan @ 5%
-            </p>
-          </div>
-          
-          <div className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1">
-            <p className="text-gray-400 text-sm mb-3 h-10 font-medium">Materi Profesional Trading</p>
-            <p className="text-white font-bold text-3xl mb-2">Rp 1.2M</p>
-            <p className="text-emerald-400 text-sm font-semibold flex items-center gap-1">
-              <span>✓</span> 12 penjualan @ 3%
-            </p>
-          </div>
-
-          <div className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1">
-            <p className="text-gray-400 text-sm mb-3 h-10 font-medium">Jurnal Trading</p>
-            <p className="text-white font-bold text-3xl mb-2">Rp 960K</p>
-            <p className="text-emerald-400 text-sm font-semibold flex items-center gap-1">
-              <span>✓</span> 8 penjualan @ 3%
-            </p>
-          </div>
-
-          <div className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1">
-            <p className="text-gray-400 text-sm mb-3 h-10 font-medium">Position Size Calculator</p>
-            <p className="text-white font-bold text-3xl mb-2">Rp 298K</p>
-            <p className="text-emerald-400 text-sm font-semibold flex items-center gap-1">
-              <span>✓</span> 2 penjualan @ 2%
-            </p>
-          </div>
+          {data.productCommissions.map((p: any, idx: number) => (
+            <div key={idx} className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1">
+              <p className="text-gray-400 text-sm mb-3 h-10 font-medium">{p.name}</p>
+              <p className="text-white font-bold text-3xl mb-2">Rp {(p.totalCommission / 1_000_000).toFixed(1)}M</p>
+              <p className="text-emerald-400 text-sm font-semibold flex items-center gap-1">
+                <span>✓</span> {p.salesCount} penjualan
+              </p>
+            </div>
+          ))}
         </div>
       </motion.div>
     </motion.div>

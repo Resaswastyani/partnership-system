@@ -103,11 +103,11 @@ export function HeroSection() {
             <span className="relative">Mulai Gratis</span>
             <span className="relative group-hover:translate-x-1 transition-transform">→</span>
           </Link>
-          <Link href="/admin"
+          {/* <Link href="/admin"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold text-[#00d2ff] border border-[rgba(0,210,255,0.3)] bg-[rgba(0,210,255,0.05)] hover:bg-[rgba(0,210,255,0.1)] transition-all duration-300 backdrop-blur-md">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
             Coba Demo Admin
-          </Link>
+          </Link> */}
         </motion.div>
 
         {/* ── 3 Phone Mockups ── */}
