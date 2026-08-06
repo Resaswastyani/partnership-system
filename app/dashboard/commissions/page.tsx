@@ -1,9 +1,7 @@
 'use client'
 
 import { StatsCard } from '@/components/dashboard/StatsCard'
-import { CURRENT_USER } from '@/lib/mock-data'
 import { motion } from 'framer-motion'
-
 import { useState, useEffect } from 'react'
 
 export default function CommissionsPage() {
@@ -12,22 +10,75 @@ export default function CommissionsPage() {
     monthlyData: [],
     productCommissions: []
   })
+  const [user, setUser] = useState<any>(null)
+  const [thisMonthPaid, setThisMonthPaid] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [bankForm, setBankForm] = useState({ bankName: '', accountNumber: '', accountName: '' })
+  const [savingBank, setSavingBank] = useState(false)
+  const [bankSaved, setBankSaved] = useState(false)
 
   useEffect(() => {
     const userStr = localStorage.getItem('auth_user')
     if (userStr) {
       const parsed = JSON.parse(userStr)
-      fetch(`/api/dashboard/commissions?userId=${parsed.id}`)
-        .then(res => res.json())
-        .then(resData => {
-          if (resData.success) {
-            setData(resData)
-          }
-          setLoading(false)
-        })
+      setUser(parsed)
+
+      // Pre-fill bank form from stored user data
+      setBankForm({
+        bankName: parsed.bankName || parsed.bank_name || '',
+        accountNumber: parsed.accountNumber || parsed.account_number || '',
+        accountName: parsed.accountName || parsed.account_name || parsed.name || ''
+      })
+
+      Promise.all([
+        fetch(`/api/dashboard/commissions?userId=${parsed.id}`).then(r => r.json()),
+        fetch(`/api/dashboard/stats?userId=${parsed.id}`).then(r => r.json()),
+      ]).then(([commissionsData, statsData]) => {
+        if (commissionsData.success) {
+          setData(commissionsData)
+
+          // Calculate this month's paid commissions from monthlyData
+          const now = new Date()
+          const currentMonthShort = now.toLocaleString('en-US', { month: 'short' })
+          const currentEntry = commissionsData.monthlyData?.find(
+            (m: any) => m.month === currentMonthShort
+          )
+          setThisMonthPaid(currentEntry?.amount || 0)
+        }
+        setLoading(false)
+      }).catch(() => setLoading(false))
     }
   }, [])
+
+  const handleSaveBank = async () => {
+    if (!user) return
+    setSavingBank(true)
+    try {
+      const res = await fetch('/api/auth/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          bankName: bankForm.bankName,
+          accountNumber: bankForm.accountNumber,
+          accountName: bankForm.accountName
+        })
+      })
+      const result = await res.json()
+      if (result.success) {
+        // Update localStorage
+        const updatedUser = { ...user, ...bankForm }
+        localStorage.setItem('auth_user', JSON.stringify(updatedUser))
+        setUser(updatedUser)
+        setBankSaved(true)
+        setTimeout(() => setBankSaved(false), 3000)
+      }
+    } catch (err) {
+      console.error('Failed to save bank info', err)
+    } finally {
+      setSavingBank(false)
+    }
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -39,8 +90,18 @@ export default function CommissionsPage() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   }
 
+  // Next payment date: 5th of next month
+  const now = new Date()
+  const nextPaymentDate = new Date(now.getFullYear(), now.getMonth() + 1, 5)
+  const nextPaymentStr = nextPaymentDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })
+
+  // Format bank display
+  const bankDisplay = bankForm.bankName && bankForm.accountNumber
+    ? `${bankForm.bankName} ****${bankForm.accountNumber.slice(-4)}`
+    : 'Belum diatur'
+
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -57,7 +118,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Komisi Diterima"
-            value={`Rp ${(data.stats.totalEarnings / 1_000_000).toFixed(1)}M`}
+            value={loading ? 'Loading...' : `Rp ${(data.stats.totalEarnings / 1_000_000).toFixed(1)}M`}
             subtitle="Semua waktu"
             icon="✅"
             color="green"
@@ -66,7 +127,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Komisi Pending"
-            value={`Rp ${(data.stats.pendingCommissions / 1_000_000).toFixed(1)}M`}
+            value={loading ? 'Loading...' : `Rp ${(data.stats.pendingCommissions / 1_000_000).toFixed(1)}M`}
             subtitle="Menunggu verifikasi"
             icon="⏳"
             color="orange"
@@ -75,7 +136,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Average Commission"
-            value={`Rp ${(data.stats.averageCommission / 1_000_000).toFixed(2)}M`}
+            value={loading ? 'Loading...' : `Rp ${(data.stats.averageCommission / 1_000_000).toFixed(2)}M`}
             subtitle="Per referral"
             icon="📊"
             color="cyan"
@@ -93,7 +154,15 @@ export default function CommissionsPage() {
           </h3>
           
           <div className="space-y-4 relative z-10">
-            {data.monthlyData.map((mData: any, idx: number) => (
+            {loading ? (
+              <div className="text-gray-400 text-sm animate-pulse">Memuat data komisi...</div>
+            ) : data.monthlyData.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="text-4xl mb-3">📊</p>
+                <p className="text-sm">Belum ada komisi bulan ini</p>
+                <p className="text-xs mt-1">Komisi akan muncul setelah referral Anda melakukan pembelian</p>
+              </div>
+            ) : data.monthlyData.map((mData: any, idx: number) => (
               <div key={idx} className="flex items-center gap-4 group">
                 <div className="w-12 text-right">
                   <p className="text-gray-400 text-sm font-semibold group-hover:text-white transition-colors">{mData.month}</p>
@@ -143,7 +212,9 @@ export default function CommissionsPage() {
                   <p className="text-white font-semibold">Pembayaran Bulan Ini</p>
                   <p className="text-gray-400 text-sm mt-0.5">Komisi yang sudah verified</p>
                 </div>
-                <p className="text-emerald-400 font-bold text-xl">Rp 2.4M</p>
+                <p className="text-emerald-400 font-bold text-xl">
+                  {loading ? '...' : `Rp ${(thisMonthPaid / 1_000_000).toFixed(1)}M`}
+                </p>
               </div>
               
               <div className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
@@ -151,7 +222,7 @@ export default function CommissionsPage() {
                   <p className="text-white font-semibold">Tanggal Transfer</p>
                   <p className="text-gray-400 text-sm mt-0.5">Setiap tanggal 5 bulan berikutnya</p>
                 </div>
-                <p className="text-accent font-bold">5 September</p>
+                <p className="text-accent font-bold">{nextPaymentStr}</p>
               </div>
 
               <div className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
@@ -159,7 +230,11 @@ export default function CommissionsPage() {
                   <p className="text-white font-semibold">Metode Pembayaran</p>
                   <p className="text-gray-400 text-sm mt-0.5">Transfer ke rekening terdaftar</p>
                 </div>
-                <p className="text-gray-300 font-semibold bg-white/10 px-3 py-1 rounded-lg">BCA ****1234</p>
+                <p className={`font-semibold bg-white/10 px-3 py-1 rounded-lg text-sm ${
+                  bankForm.bankName ? 'text-gray-300' : 'text-amber-400'
+                }`}>
+                  {bankDisplay}
+                </p>
               </div>
             </div>
           </motion.div>
@@ -170,11 +245,47 @@ export default function CommissionsPage() {
             <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2 relative z-10">
               <span className="text-primary">🏦</span> Rekening Bank Penerima
             </h3>
-            <div className="bg-background/50 rounded-xl p-5 border border-white/10 relative z-10">
-              <p className="text-gray-400 text-sm mb-2 uppercase tracking-wider font-medium">Bank Account</p>
-              <p className="text-white font-mono font-bold text-lg tracking-wide">BCA - Ahmad Trader - 1234567890</p>
-              <button className="mt-6 px-6 py-3 bg-primary/10 text-primary border border-primary/30 rounded-xl hover:bg-primary/20 hover:border-primary/50 transition-all text-sm font-bold shadow-[0_0_15px_rgba(139,92,246,0.15)] hover:shadow-[0_0_20px_rgba(139,92,246,0.3)]">
-                Update Rekening
+            <div className="space-y-3 relative z-10">
+              <div>
+                <label className="text-gray-400 text-xs uppercase tracking-wider font-medium block mb-1.5">Nama Bank</label>
+                <input
+                  type="text"
+                  value={bankForm.bankName}
+                  onChange={(e) => setBankForm({ ...bankForm, bankName: e.target.value })}
+                  placeholder="Contoh: BCA, BNI, Mandiri"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-gray-400 text-xs uppercase tracking-wider font-medium block mb-1.5">Nomor Rekening</label>
+                <input
+                  type="text"
+                  value={bankForm.accountNumber}
+                  onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value })}
+                  placeholder="Nomor rekening Anda"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-gray-400 text-xs uppercase tracking-wider font-medium block mb-1.5">Nama Pemilik Rekening</label>
+                <input
+                  type="text"
+                  value={bankForm.accountName}
+                  onChange={(e) => setBankForm({ ...bankForm, accountName: e.target.value })}
+                  placeholder="Nama sesuai buku tabungan"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                />
+              </div>
+              <button
+                onClick={handleSaveBank}
+                disabled={savingBank}
+                className={`mt-2 w-full px-6 py-3 rounded-xl text-sm font-bold transition-all ${
+                  bankSaved
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 hover:border-primary/50 shadow-[0_0_15px_rgba(139,92,246,0.15)] hover:shadow-[0_0_20px_rgba(139,92,246,0.3)] disabled:opacity-50'
+                }`}
+              >
+                {savingBank ? 'Menyimpan...' : bankSaved ? '✓ Tersimpan!' : 'Simpan Rekening'}
               </button>
             </div>
           </motion.div>
@@ -188,7 +299,15 @@ export default function CommissionsPage() {
         </h3>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {data.productCommissions.map((p: any, idx: number) => (
+          {loading ? (
+            <div className="col-span-4 text-center py-8 text-gray-400 animate-pulse">Memuat data...</div>
+          ) : data.productCommissions.length === 0 ? (
+            <div className="col-span-4 text-center py-8">
+              <p className="text-4xl mb-3">🏆</p>
+              <p className="text-gray-500 text-sm">Belum ada komisi per produk</p>
+              <p className="text-gray-600 text-xs mt-1">Bagikan link referral Anda untuk mulai mendapatkan komisi</p>
+            </div>
+          ) : data.productCommissions.map((p: any, idx: number) => (
             <div key={idx} className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1">
               <p className="text-gray-400 text-sm mb-3 h-10 font-medium">{p.name}</p>
               <p className="text-white font-bold text-3xl mb-2">Rp {(p.totalCommission / 1_000_000).toFixed(1)}M</p>
