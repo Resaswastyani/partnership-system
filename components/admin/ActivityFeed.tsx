@@ -35,7 +35,10 @@ export function ActivityFeed({ activities, maxItems = 10 }: ActivityFeedProps) {
     }
   }
 
-  const formatTime = (date: Date) => {
+  const formatTime = (date?: Date) => {
+    if (!date || !(date instanceof Date)) {
+      return ''
+    }
     const now = new Date()
     const diff = now.getTime() - date.getTime()
     const minutes = Math.floor(diff / 60000)
