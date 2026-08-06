@@ -21,7 +21,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
   // New: product type filter
-  const [filter, setFilter] = useState<'all' | 'ea' | 'position'>('all')
+  const [filter, setFilter] = useState<'all' | 'materi' | 'paket' | 'ea' | 'position-size' | 'jurnal'>('all')
   // Analytics helper
   const trackFilterUsage = useCallback((selected: string) => {
     fetch('/api/analytics', {
@@ -134,12 +134,18 @@ export default function ProductsPage() {
   }
 
 
+  const BUNDLE_ID = 'bundle-001'
   const filteredProducts = products.filter(p => {
     if (filter === 'all') return true
+    if (filter === 'paket') return p.id === BUNDLE_ID
+    if (filter === 'materi') return p.id !== BUNDLE_ID && !p.name.toLowerCase().includes('ea') && !p.name.toLowerCase().includes('position') && !p.name.toLowerCase().includes('jurnal')
     if (filter === 'ea') return p.name.toLowerCase().includes('ea')
-    if (filter === 'position') return p.name.toLowerCase().includes('position')
+    if (filter === 'position-size') return p.name.toLowerCase().includes('position')
+    if (filter === 'jurnal') return p.name.toLowerCase().includes('jurnal')
     return true
   })
+  const bundleProduct = products.find(p => p.id === BUNDLE_ID)
+  const individualProducts = filteredProducts.filter(p => p.id !== BUNDLE_ID)
   
   const faqs = [
     {
@@ -205,139 +211,174 @@ export default function ProductsPage() {
           </motion.p>
         </motion.div>
 
-        {/* ── FILTER BUTTONS ── */}
-        <div className="flex gap-4 justify-center mb-8">
-          {['all', 'ea', 'position'].map(key => (
+        {/* ── FILTER TABS ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-wrap gap-3 justify-center mb-12"
+        >
+          {[
+            { key: 'all', label: 'Semua', icon: '🏷️' },
+            { key: 'materi', label: 'Materi Trading', icon: '📚' },
+            { key: 'paket', label: 'Paket Bundle', icon: '🎁' },
+            { key: 'ea', label: 'Expert Advisor', icon: '🤖' },
+            { key: 'position-size', label: 'Position Size Calc', icon: '📐' },
+            { key: 'jurnal', label: 'Jurnal Trading', icon: '📒' },
+          ].map(({ key, label, icon }) => (
             <button
               key={key}
-              className={`px-4 py-2 rounded-xl border ${filter === key ? 'bg-primary/20 border-primary' : 'bg-white/5 border-white/10'}`}
-              onClick={() => {
-                setFilter(key as any)
-                trackFilterUsage(key)
-              }}
+              id={`filter-${key}`}
               aria-pressed={filter === key}
+              onClick={() => { setFilter(key as any); trackFilterUsage(key) }}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl border text-sm font-semibold transition-all duration-300 ${
+                filter === key
+                  ? 'bg-primary/20 border-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]'
+                  : 'bg-white/[0.03] border-white/10 text-gray-400 hover:bg-white/[0.07] hover:text-white hover:border-white/20'
+              }`}
             >
-              {key === 'all' ? 'All' : key === 'ea' ? 'EA' : 'Position Size'}
+              <span>{icon}</span> {label}
             </button>
           ))}
-        </div>
-          {/* ── PRODUCTS & BUNDLE LAYOUT ── */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left: Filtered Products */}
-          <div className="flex-1 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading ? (
-              <div className="col-span-full text-center text-gray-400 py-10 animate-pulse">Memuat produk dari database...</div>
-            ) : filteredProducts
-                .filter(p => p.id !== 'bundle-001')
-                .map((product, index) => (
-                  <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-100px' }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    whileHover={{ y: -10 }}
-                    key={product.id}
-                    className="group relative bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden backdrop-blur-xl flex flex-col hover:bg-white/[0.04] transition-colors duration-500"
-                  >
-                    <div className="absolute inset-0 rounded-3xl border border-transparent group-hover:border-primary/50 transition-colors duration-500 z-20 pointer-events-none" />
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-b from-primary/10 to-transparent transition-opacity duration-500 z-0" />
+        </motion.div>
 
-                    {/* Product Image */}
-                    <div className="relative h-48 overflow-hidden z-10">
-                      <Image
-                        src={product.image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=300&fit=crop'}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#05070a] to-transparent" />
-                      <div className="absolute top-4 right-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5">
-                        <span className={product.type === 'download' ? 'text-primary' : 'text-accent'}>
-                          {product.type === 'download' ? '📥' : '🔑'}
-                        </span>
-                        {product.type === 'download' ? 'Download' : 'Web Access'}
-                      </div>
-                    </div>
+        {/* ── MAIN LAYOUT: Bundle Left (sticky) + Products Right ── */}
+        <div className="flex flex-col lg:flex-row gap-8 items-start mb-40">
 
-                    {/* Content */}
-                    <div className="p-6 flex flex-col flex-1 relative z-10">
-                      <h3 className="text-xl font-bold mb-3">{product.name}</h3>
-                      <p className="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">{product.description}</p>
-
-                      {/* Features */}
-                      <div className="space-y-2.5 mb-6">
-                        {product.features?.slice(0, 3).map((feature: string, idx: number) => (
-                          <div key={idx} className="flex items-start gap-2 text-sm">
-                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                              <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-300">{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Pricing */}
-                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 mb-6 group-hover:border-primary/20 transition-colors duration-500">
-                        <div className="flex justify-between items-end mb-2">
-                          <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold">Harga</span>
-                          <span className="text-2xl font-black">Rp {(product.price / 1000).toLocaleString()}K</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-primary text-xs uppercase tracking-wider font-bold">Komisi Affiliate</span>
-                          <span className="text-primary font-black text-lg">{product.commission_rate}%</span>
-                        </div>
-                        <div className="mt-2 text-right">
-                          <span className="text-emerald-400 text-xs font-semibold">
-                            ≈ Rp {Math.floor(product.price * product.commission_rate / 100).toLocaleString()} / penjualan
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => handleBuy(product.id)}
-                          className="w-full py-3 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-bold rounded-xl text-center transition-all duration-300 shadow-[0_0_15px_rgba(139,92,246,0.3)] text-sm"
-                        >
-                          🛒 Beli Sekarang
-                        </button>
-                        <Link
-                          href="/register"
-                          className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-center transition-colors duration-300 text-sm"
-                        >
-                          Mulai Jual (Daftar)
-                        </Link>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-          </div>
-
-          {/* Right: Bundle Card (sticky) */}
-          <div className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-20">
-            {filteredProducts.find(p => p.id === 'bundle-001') && (
+          {/* ── LEFT: STICKY BUNDLE CARD ── */}
+          <div className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-24">
+            {bundleProduct && (
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6 }}
-                className="glass-card bg-gradient-to-br from-purple-600/20 to-indigo-600/10 rounded-2xl p-6 border border-purple-500/30"
+                className="relative rounded-2xl overflow-hidden border border-purple-500/40 bg-gradient-to-b from-[#1a0a2e] to-[#0d1525]"
               >
-                <h3 className="text-xl font-bold text-white mb-3">ULTIMATE TRADING BUNDLE</h3>
-                <p className="text-sm text-gray-200 mb-4 line-clamp-4">
-                  Includes 23 premium courses covering all aspects of Forex trading.
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-primary font-bold text-lg">Rp 199.000</span>
+                {/* HOT DEAL Badge */}
+                <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+                  <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500 text-white text-xs font-black tracking-wide">
+                    🔥 HOT DEAL
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold">73% OFF</span>
+                </div>
+                {/* Glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-transparent to-indigo-900/20 pointer-events-none" />
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
+
+                <div className="relative z-10 p-6 pt-16">
+                  <h3 className="text-2xl font-black text-white mb-1 leading-tight">ULTIMATE TRADING BUNDLE</h3>
+                  <p className="text-purple-300 text-sm font-semibold mb-4">Includes {bundleProduct.features?.length || 23} Courses:</p>
+
+                  {/* Course list */}
+                  <div className="space-y-1.5 mb-6 max-h-64 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-transparent">
+                    {(bundleProduct.features || []).map((f: string, i: number) => (
+                      <div key={i} className="flex items-start gap-2 text-xs text-gray-300">
+                        <span className="text-purple-400 font-bold mt-0.5 shrink-0">{i + 1}.</span>
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Price */}
+                  <div className="border-t border-white/10 pt-4 mb-4">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="text-gray-500 line-through text-sm">Rp 748.550</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-bold">HEMAT 73%</span>
+                    </div>
+                    <div className="text-3xl font-black text-white">Rp 199.000</div>
+                    <div className="text-emerald-400 text-xs font-semibold mt-1">
+                      ≈ Komisi Rp {Math.floor((bundleProduct.price || 199000) * (bundleProduct.commission_rate || bundleProduct.commissionRate || 5) / 100).toLocaleString()} / penjualan
+                    </div>
+                  </div>
+
                   <button
-                    className="px-3 py-1 bg-primary/20 text-primary rounded hover:bg-primary/30 transition"
-                    onClick={() => handleBuy('bundle-001')}
+                    onClick={() => handleBuy(bundleProduct.id)}
+                    className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black rounded-xl text-sm transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:shadow-[0_0_30px_rgba(139,92,246,0.6)]"
                   >
-                    Add to Cart
+                    🛒 ADD TO CART
                   </button>
+                  <Link
+                    href="/register"
+                    className="block w-full mt-2 py-3 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white font-semibold rounded-xl text-sm text-center transition-all duration-300 border border-white/10"
+                  >
+                    Mulai Jual (Daftar)
+                  </Link>
                 </div>
               </motion.div>
+            )}
+          </div>
+
+          {/* ── RIGHT: INDIVIDUAL PRODUCTS LIST ── */}
+          <div className="flex-1 space-y-4">
+            {loading ? (
+              <div className="text-center text-gray-400 py-20 animate-pulse">Memuat produk dari database...</div>
+            ) : individualProducts.length === 0 ? (
+              <div className="text-center text-gray-500 py-20">
+                <p className="text-5xl mb-4">🔍</p>
+                <p className="font-semibold text-lg">Tidak ada produk untuk kategori ini.</p>
+              </div>
+            ) : (
+              individualProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.4, delay: index * 0.06 }}
+                  className="group relative flex flex-col sm:flex-row gap-4 p-5 rounded-2xl bg-white/[0.025] border border-white/5 hover:bg-white/[0.045] hover:border-white/10 transition-all duration-300 backdrop-blur-md"
+                >
+                  {/* Left: Index number */}
+                  <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-sm">
+                    {index + 1}
+                  </div>
+
+                  {/* Middle: Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h3 className="font-bold text-white text-base leading-snug">{product.name}</h3>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        product.price === 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-primary/10 text-primary'
+                      }`}>
+                        {product.price === 0 ? '✓ Gratis' : `Rp ${(product.price / 1000).toLocaleString()}K`}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-2">
+                      <span className="flex items-center gap-1">📚 1 Lessons</span>
+                      <span className="flex items-center gap-1">⏱ 15 min</span>
+                      <span className="flex items-center gap-1">📈 All Levels</span>
+                    </div>
+                    <p className="text-gray-400 text-xs leading-relaxed line-clamp-2">{product.description}</p>
+                  </div>
+
+                  {/* Right: Price & Actions */}
+                  <div className="flex flex-col items-end justify-between gap-2 flex-shrink-0">
+                    <div className="text-right">
+                      {product.price === 0 ? (
+                        <span className="text-emerald-400 font-black text-lg">Free</span>
+                      ) : (
+                        <span className="text-white font-black text-lg">Rp {(product.price / 1000).toLocaleString()}K</span>
+                      )}
+                      {product.commission_rate > 0 && (
+                        <div className="text-primary text-xs font-semibold mt-0.5">{product.commission_rate}% komisi</div>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleBuy(product.id)}
+                        className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 rounded-xl text-xs font-bold transition-all duration-300"
+                      >
+                        Preview
+                      </button>
+                      <button
+                        onClick={() => handleBuy(product.id)}
+                        className="px-4 py-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all duration-300 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
+                      >
+                        Beli Sekarang
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
             )}
           </div>
         </div>
