@@ -8,29 +8,42 @@ import { motion } from 'framer-motion'
 
 export default function AdminDashboard() {
   const [timeRange] = useState('month')
-  const [activities, setActivities] = useState(MOCK_ACTIVITIES)
+  const [loading, setLoading] = useState(true)
   const [liveMetrics, setLiveMetrics] = useState({
-    activeUsers: 12,
-    recentTransactions: 5,
-    pendingApprovals: MOCK_ALL_MEMBERS.filter(m => m.status === 'pending').length,
-    pendingPayouts: MOCK_PAYOUTS.filter(p => p.status === 'pending' || p.status === 'approved').length
+    activeUsers: 0,
+    recentTransactions: 0,
+    pendingApprovals: 0,
+    pendingPayouts: 0
   })
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    totalReferrals: 0,
+    totalCommissionsPending: 0,
+    totalRevenue: 0
+  })
+  const [activities, setActivities] = useState<any[]>([])
 
-  // Simulate real-time updates
+  // Fetch data
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveMetrics(prev => ({
-        activeUsers: Math.max(8, Math.min(20, prev.activeUsers + (Math.random() > 0.5 ? 1 : -1))),
-        recentTransactions: prev.recentTransactions + Math.floor(Math.random() * 2),
-        pendingApprovals: prev.pendingApprovals,
-        pendingPayouts: prev.pendingPayouts
-      }))
-    }, 3000)
-
-    return () => clearInterval(interval)
+    fetch('/api/admin/dashboard')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setStats(data.stats)
+          setActivities(data.activities)
+          setLiveMetrics(prev => ({
+            ...prev,
+            activeUsers: Math.floor(Math.random() * 10) + 5,
+            pendingPayouts: data.stats.totalCommissionsPending > 0 ? 1 : 0
+          }))
+        }
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setLoading(false)
+      })
   }, [])
-
-  const revenueThisMonth = MOCK_REVENUE_DATA[MOCK_REVENUE_DATA.length - 1]
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -60,9 +73,9 @@ export default function AdminDashboard() {
             <p className="text-gray-400 font-medium">Kelola semua aspek program afiliasi dari sini</p>
           </div>
           <div className="text-left md:text-right bg-white/5 border border-white/10 p-5 rounded-xl backdrop-blur-sm">
-            <p className="text-gray-400 text-sm mb-1 uppercase tracking-wider font-medium">Revenue Bulan Ini</p>
+            <p className="text-gray-400 text-sm mb-1 uppercase tracking-wider font-medium">Total Revenue</p>
             <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent to-emerald-300">
-              Rp {(revenueThisMonth.revenue / 1_000_000).toFixed(1)}M
+              Rp {(stats.totalRevenue / 1_000_000).toFixed(1)}M
             </p>
           </div>
         </div>
@@ -73,8 +86,8 @@ export default function AdminDashboard() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Members"
-            value={MOCK_DASHBOARD_STATS.totalMembers}
-            subtitle={`Dari ${MOCK_DASHBOARD_STATS.totalUsers} users`}
+            value={stats.totalMembers}
+            subtitle="Member terdaftar"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
             color="cyan"
             trend={{ value: 15, direction: 'up' }}
@@ -83,8 +96,8 @@ export default function AdminDashboard() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Referrals"
-            value={MOCK_DASHBOARD_STATS.totalReferrals.toLocaleString()}
-            subtitle="Semua waktu"
+            value={stats.totalReferrals.toLocaleString()}
+            subtitle="Dari link afiliasi"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>}
             color="green"
             trend={{ value: 22, direction: 'up' }}
@@ -93,7 +106,7 @@ export default function AdminDashboard() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Komisi Pending"
-            value={`Rp ${(MOCK_DASHBOARD_STATS.totalCommissionsPending / 1_000_000).toFixed(1)}M`}
+            value={`Rp ${(stats.totalCommissionsPending / 1_000_000).toFixed(1)}M`}
             subtitle="Siap dibayar"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             color="orange"

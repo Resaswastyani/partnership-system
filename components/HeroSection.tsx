@@ -27,7 +27,7 @@ export function HeroSection() {
 
   return (
     <div ref={ref} className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[#080b14] pt-28 pb-16 px-4 sm:px-6 lg:px-8">
-      
+
       {/* ── Grid Background ── */}
       <div className="absolute inset-0 pointer-events-none"
         style={{
@@ -66,7 +66,7 @@ export function HeroSection() {
       </div>
 
       <motion.div style={{ y, opacity }} className="relative z-10 w-full max-w-7xl mx-auto">
-        
+
         {/* ── Badge ── */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
           className="flex justify-center mb-8">
@@ -79,7 +79,7 @@ export function HeroSection() {
         {/* ── Heading ── */}
         <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
           className="text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight mb-6 max-w-5xl mx-auto">
-          Hasilkan Komisi Trading{' '}
+          Hasilkan Komisi{' '}
           <span className="relative">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00d2ff] via-[#7c3aed] to-[#00d2ff] bg-[length:200%_auto] animate-[gradient_4s_linear_infinite]">
               Tanpa Batas
@@ -113,7 +113,7 @@ export function HeroSection() {
         {/* ── 3 Phone Mockups ── */}
         <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, delay: 0.5, type: 'spring' }}
           className="relative flex justify-center items-end gap-4 md:gap-6 mb-20 h-[420px] md:h-[500px]">
-          
+
           {/* Left Phone */}
           <motion.div animate={{ y: [10, -10, 10] }} transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
             className="relative hidden md:block w-[180px] shrink-0" style={{ transform: 'perspective(1000px) rotateY(15deg)' }}>
@@ -128,7 +128,7 @@ export function HeroSection() {
                 </div>
                 <p className="text-[8px] text-gray-500 mb-1">Statistik Bulan Ini</p>
                 <div className="grid grid-cols-2 gap-1.5 mb-3">
-                  {[{l:'Klik', v:'1,284'},{l:'Daftar', v:'47'},{l:'Beli', v:'23'},{l:'Rate', v:'48.9%'}].map(x => (
+                  {[{ l: 'Klik', v: '1,284' }, { l: 'Daftar', v: '47' }, { l: 'Beli', v: '23' }, { l: 'Rate', v: '48.9%' }].map(x => (
                     <div key={x.l} className="bg-white/5 rounded-lg p-2">
                       <p className="text-[7px] text-gray-400">{x.l}</p>
                       <p className="text-[10px] font-bold text-white">{x.v}</p>
@@ -136,7 +136,7 @@ export function HeroSection() {
                   ))}
                 </div>
                 <div className="flex-1 flex items-end gap-0.5 px-1">
-                  {[30,60,40,80,55,90,70].map((h,i) => (
+                  {[30, 60, 40, 80, 55, 90, 70].map((h, i) => (
                     <motion.div key={i} initial={{ height: 0 }} animate={{ height: `${h}%` }} transition={{ duration: 1, delay: 1.5 + i * 0.1 }}
                       className="flex-1 rounded-t-sm" style={{ background: i === 5 ? '#00d2ff' : 'rgba(255,255,255,0.1)' }} />
                   ))}
@@ -166,7 +166,7 @@ export function HeroSection() {
                 {/* Chart */}
                 <div className="px-4 py-3">
                   <div className="h-28 flex items-end gap-1">
-                    {[35,55,40,75,50,88,65,95,80,100].map((h,i) => (
+                    {[35, 55, 40, 75, 50, 88, 65, 95, 80, 100].map((h, i) => (
                       <motion.div key={i} initial={{ height: 0 }} animate={{ height: `${h}%` }}
                         transition={{ duration: 1, delay: 1.2 + i * 0.08 }}
                         className="flex-1 rounded-t"

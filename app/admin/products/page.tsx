@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { PRODUCTS } from '@/lib/mock-data'
+import { useState, useEffect } from 'react'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { motion } from 'framer-motion'
 
@@ -23,9 +22,23 @@ interface EditModal {
 }
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>(
-    PRODUCTS.map(p => ({ ...p, active: true }))
-  )
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/admin/products')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setProducts(data.products)
+        }
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [])
   const [editModal, setEditModal] = useState<EditModal>({ visible: false, product: null })
   const [formData, setFormData] = useState({
     price: 0,
@@ -47,14 +60,32 @@ export default function ProductsPage() {
     })
   }
 
-  const saveChanges = () => {
+  const saveChanges = async () => {
     if (!editModal.product) return
 
-    setProducts(products.map(p =>
-      p.id === editModal.product?.id
-        ? { ...p, price: formData.price, commissionRate: formData.commissionRate }
-        : p
-    ))
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editModal.product.id,
+          price: formData.price,
+          commissionRate: formData.commissionRate
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setProducts(products.map(p =>
+          p.id === editModal.product?.id
+            ? { ...p, price: formData.price, commissionRate: formData.commissionRate }
+            : p
+        ))
+      } else {
+        alert('Gagal menyimpan: ' + data.error)
+      }
+    } catch (error) {
+      alert('Gagal menyimpan perubahan')
+    }
 
     setEditModal({ visible: false, product: null })
   }

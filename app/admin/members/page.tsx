@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { MOCK_ALL_MEMBERS } from '@/lib/mock-data'
+import { useState, useEffect } from 'react'
 import { DataTable } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { motion } from 'framer-motion'
@@ -13,8 +12,24 @@ interface ActionModal {
 }
 
 export default function MembersPage() {
-  const [members, setMembers] = useState(MOCK_ALL_MEMBERS)
+  const [members, setMembers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<ActionModal>({ visible: false, type: 'approve', member: null })
+
+  useEffect(() => {
+    fetch('/api/admin/members')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setMembers(data.members)
+        }
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [])
 
   const stats = {
     total: members.length,
@@ -29,23 +44,36 @@ export default function MembersPage() {
     setModal({ visible: true, type, member })
   }
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
     if (!modal.member) return
 
+    let newStatus = ''
     switch (modal.type) {
-      case 'approve':
-        setMembers(members.map(m =>
-          m.id === modal.member.id ? { ...m, status: 'active' } : m
-        ))
-        break
-      case 'suspend':
-        setMembers(members.map(m =>
-          m.id === modal.member.id ? { ...m, status: 'suspended' } : m
-        ))
-        break
+      case 'approve': newStatus = 'active'; break
+      case 'suspend': newStatus = 'suspended'; break
       case 'delete':
+        // Optional: Implement hard delete or soft delete
         setMembers(members.filter(m => m.id !== modal.member.id))
-        break
+        setModal({ visible: false, type: 'approve', member: null })
+        return
+    }
+
+    try {
+      const res = await fetch('/api/admin/members', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: modal.member.id, status: newStatus })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setMembers(members.map(m =>
+          m.id === modal.member.id ? { ...m, status: newStatus } : m
+        ))
+      } else {
+        alert('Gagal update status: ' + data.error)
+      }
+    } catch (error) {
+      alert('Gagal update status')
     }
 
     setModal({ visible: false, type: 'approve', member: null })
