@@ -118,7 +118,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Komisi Diterima"
-            value={loading ? 'Loading...' : `Rp ${(data.stats.totalEarnings / 1_000_000).toFixed(1)}M`}
+            value={loading ? 'Loading...' : data.stats.totalEarnings}
             subtitle="Semua waktu"
             icon="✅"
             color="green"
@@ -127,7 +127,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Komisi Pending"
-            value={loading ? 'Loading...' : `Rp ${(data.stats.pendingCommissions / 1_000_000).toFixed(1)}M`}
+            value={loading ? 'Loading...' : data.stats.pendingCommissions}
             subtitle="Menunggu verifikasi"
             icon="⏳"
             color="orange"

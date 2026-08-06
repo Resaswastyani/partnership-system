@@ -27,6 +27,21 @@ const iconColors = {
 }
 
 export function StatsCard({ title, value, subtitle, icon, color, trend }: StatsCardProps) {
+  // Helper to format the displayed value
+  const formatValue = (val: string | number) => {
+    if (typeof val === 'number') {
+      // If less than one million, show full Rupiah amount
+      if (val < 1_000_000) {
+        return `Rp ${val.toLocaleString('id-ID')}`
+      }
+      // Otherwise, show in millions with one decimal place
+      return `Rp ${(val / 1_000_000).toFixed(1)}M`
+    }
+    // If already a formatted string, return as is
+    return val
+  }
+  const displayValue = formatValue(value)
+
   return (
     <div className={`glass-card bg-gradient-to-br ${colorClasses[color]} rounded-2xl p-6 transition-all duration-300 relative overflow-hidden group`}>
       <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-[40px] -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
@@ -34,7 +49,7 @@ export function StatsCard({ title, value, subtitle, icon, color, trend }: StatsC
         <div>
           <p className="text-gray-400 text-sm font-medium mb-1 tracking-wide">{title}</p>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-bold text-white tracking-tight">{value}</h3>
+            <h3 className="text-3xl font-bold text-white tracking-tight">{displayValue}</h3>
             {trend && (
               <span className={`text-sm font-semibold flex items-center gap-0.5 ${trend.direction === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
                 {trend.direction === 'up' ? '↗' : '↘'} {trend.value}%
