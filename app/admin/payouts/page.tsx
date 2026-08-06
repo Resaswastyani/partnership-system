@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { MOCK_PAYOUTS } from '@/lib/mock-data'
+import { useState, useEffect } from 'react'
 import { DataTable } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { motion } from 'framer-motion'
@@ -13,8 +12,27 @@ interface PayoutModal {
 }
 
 export default function PayoutsPage() {
-  const [payouts, setPayouts] = useState(MOCK_PAYOUTS)
+  const [payouts, setPayouts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<PayoutModal>({ visible: false, type: 'approve', payout: null })
+
+  useEffect(() => {
+    fetchPayouts()
+  }, [])
+
+  const fetchPayouts = async () => {
+    try {
+      const res = await fetch('/api/admin/payouts?status=all')
+      const data = await res.json()
+      if (data.success) {
+        setPayouts(data.payouts)
+      }
+    } catch (error) {
+      console.error('Failed to fetch payouts', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const stats = {
     pending: payouts.filter(p => p.status === 'pending').length,
@@ -22,12 +40,12 @@ export default function PayoutsPage() {
     processed: payouts.filter(p => p.status === 'processed').length,
     totalPending: payouts
       .filter(p => p.status === 'pending' || p.status === 'approved')
-      .reduce((sum, p) => sum + p.amount, 0),
+      .reduce((sum, p) => sum + Number(p.amount), 0),
     totalProcessed: payouts
       .filter(p => p.status === 'processed')
-      .reduce((sum, p) => sum + p.amount, 0),
+      .reduce((sum, p) => sum + Number(p.amount), 0),
     averagePayout: payouts.length > 0
-      ? payouts.reduce((sum, p) => sum + p.amount, 0) / payouts.length
+      ? payouts.reduce((sum, p) => sum + Number(p.amount), 0) / payouts.length
       : 0
   }
 
@@ -35,20 +53,40 @@ export default function PayoutsPage() {
     setModal({ visible: true, type, payout })
   }
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
     if (!modal.payout) return
 
-    const newStatus = modal.type === 'approve' ? 'approved' : modal.type === 'process' ? 'processed' : 'failed'
+    const newStatus = modal.type === 'approve' ? 'approved' : modal.type === 'process' ? 'processed' : 'rejected'
+    
+    // For process we do local update, wait, the API has only approve/reject logic, but approve sets it to processed?
+    // Let's check the API: if action === 'approve', it sets status to 'processed'.
+    // If action === 'reject', it sets status to 'rejected'.
+    const apiAction = (modal.type === 'approve' || modal.type === 'process') ? 'approve' : 'reject'
 
-    setPayouts(payouts.map(p =>
-      p.id === modal.payout.id
-        ? {
-            ...p,
-            status: newStatus,
-            processedAt: ['approved', 'processed'].includes(newStatus) ? new Date() : p.processedAt
-          }
-        : p
-    ))
+    try {
+      const res = await fetch('/api/admin/payouts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payoutId: modal.payout.id,
+          action: apiAction
+        })
+      })
+      
+      if (res.ok) {
+        setPayouts(payouts.map(p =>
+          p.id === modal.payout.id
+            ? {
+                ...p,
+                status: apiAction === 'approve' ? 'processed' : 'rejected',
+                processed_at: new Date()
+              }
+            : p
+        ))
+      }
+    } catch (error) {
+      console.error('Action failed', error)
+    }
 
     setModal({ visible: false, type: 'approve', payout: null })
   }
@@ -58,12 +96,12 @@ export default function PayoutsPage() {
 
   const pendingColumns = [
     {
-      key: 'affiliateName',
+      key: 'affiliate_name',
       label: 'Nama Affiliate',
       render: (val: string) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-xs">
-            {val.charAt(0)}
+            {val ? val.charAt(0) : '?'}
           </div>
           <span className="text-white font-semibold">{val}</span>
         </div>
@@ -73,8 +111,8 @@ export default function PayoutsPage() {
     {
       key: 'amount',
       label: 'Jumlah',
-      render: (val: number) => (
-        <span className="text-primary font-bold">Rp {val.toLocaleString('id-ID')}</span>
+      render: (val: any) => (
+        <span className="text-primary font-bold">Rp {Number(val).toLocaleString('id-ID')}</span>
       ),
       sortable: true
     },
@@ -83,7 +121,7 @@ export default function PayoutsPage() {
       label: 'Jumlah Komisi'
     },
     {
-      key: 'bankName',
+      key: 'bank_name',
       label: 'Bank'
     },
     {
@@ -95,12 +133,12 @@ export default function PayoutsPage() {
 
   const processedColumns = [
     {
-      key: 'affiliateName',
+      key: 'affiliate_name',
       label: 'Nama Affiliate',
       render: (val: string) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs">
-            {val.charAt(0)}
+            {val ? val.charAt(0) : '?'}
           </div>
           <span className="text-white font-semibold">{val}</span>
         </div>
@@ -110,19 +148,19 @@ export default function PayoutsPage() {
     {
       key: 'amount',
       label: 'Jumlah',
-      render: (val: number) => (
-        <span className="text-emerald-400 font-bold">Rp {val.toLocaleString('id-ID')}</span>
+      render: (val: any) => (
+        <span className="text-emerald-400 font-bold">Rp {Number(val).toLocaleString('id-ID')}</span>
       ),
       sortable: true
     },
     {
-      key: 'bankName',
+      key: 'bank_name',
       label: 'Bank'
     },
     {
-      key: 'processedAt',
+      key: 'processed_at',
       label: 'Tanggal Diproses',
-      render: (val: Date) => new Date(val).toLocaleDateString('id-ID')
+      render: (val: Date) => val ? new Date(val).toLocaleDateString('id-ID') : '-'
     }
   ]
 
@@ -238,19 +276,19 @@ export default function PayoutsPage() {
             <div className="space-y-3 mb-6 p-5 rounded-xl bg-white/5 border border-white/10">
               <div className="flex justify-between">
                 <p className="text-gray-400 text-sm">Affiliate</p>
-                <p className="text-white font-semibold">{modal.payout.affiliateName}</p>
+                <p className="text-white font-semibold">{modal.payout.affiliate_name}</p>
               </div>
               <div className="flex justify-between">
                 <p className="text-gray-400 text-sm">Jumlah</p>
-                <p className="text-primary font-bold text-lg">Rp {modal.payout.amount.toLocaleString('id-ID')}</p>
+                <p className="text-primary font-bold text-lg">Rp {Number(modal.payout.amount).toLocaleString('id-ID')}</p>
               </div>
               <div className="flex justify-between">
                 <p className="text-gray-400 text-sm">Bank</p>
-                <p className="text-white font-semibold">{modal.payout.bankName}</p>
+                <p className="text-white font-semibold">{modal.payout.bank_name}</p>
               </div>
               <div className="flex justify-between">
                 <p className="text-gray-400 text-sm">Rekening</p>
-                <p className="text-gray-300 font-mono">{modal.payout.accountNumber}</p>
+                <p className="text-gray-300 font-mono">{modal.payout.account_number}</p>
               </div>
               <div className="flex justify-between">
                 <p className="text-gray-400 text-sm">Jumlah Komisi</p>
