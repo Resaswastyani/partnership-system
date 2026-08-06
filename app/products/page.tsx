@@ -221,95 +221,125 @@ export default function ProductsPage() {
             </button>
           ))}
         </div>
-        
-        {/* ── PRODUCTS GRID ── */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-40">
-          {loading ? (
-            <div className="col-span-full text-center text-gray-400 py-10 animate-pulse">Memuat produk dari database...</div>
-          ) : filteredProducts.map((product, index) => (
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ y: -10 }}
-              key={product.id}
-              className="group relative bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden backdrop-blur-xl flex flex-col hover:bg-white/[0.04] transition-colors duration-500"
-            >
-              <div className="absolute inset-0 rounded-3xl border border-transparent group-hover:border-primary/50 transition-colors duration-500 z-20 pointer-events-none" />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-b from-primary/10 to-transparent transition-opacity duration-500 z-0" />
+          {/* ── PRODUCTS & BUNDLE LAYOUT ── */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left: Filtered Products */}
+          <div className="flex-1 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              <div className="col-span-full text-center text-gray-400 py-10 animate-pulse">Memuat produk dari database...</div>
+            ) : filteredProducts
+                .filter(p => p.id !== 'bundle-001')
+                .map((product, index) => (
+                  <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-100px' }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    whileHover={{ y: -10 }}
+                    key={product.id}
+                    className="group relative bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden backdrop-blur-xl flex flex-col hover:bg-white/[0.04] transition-colors duration-500"
+                  >
+                    <div className="absolute inset-0 rounded-3xl border border-transparent group-hover:border-primary/50 transition-colors duration-500 z-20 pointer-events-none" />
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-b from-primary/10 to-transparent transition-opacity duration-500 z-0" />
 
-              {/* Product Image */}
-              <div className="relative h-48 overflow-hidden z-10">
-                <Image
-                  src={product.image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=300&fit=crop'}
-                  alt={product.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#05070a] to-transparent" />
-                <div className="absolute top-4 right-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5">
-                  <span className={product.type === 'download' ? 'text-primary' : 'text-accent'}>
-                    {product.type === 'download' ? '📥' : '🔑'}
-                  </span>
-                  {product.type === 'download' ? 'Download' : 'Web Access'}
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-6 flex flex-col flex-1 relative z-10">
-                <h3 className="text-xl font-bold mb-3">{product.name}</h3>
-                <p className="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">{product.description}</p>
-
-                {/* Features */}
-                <div className="space-y-2.5 mb-6">
-                  {product.features?.slice(0, 3).map((feature: string, idx: number) => (
-                    <div key={idx} className="flex items-start gap-2 text-sm">
-                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
+                    {/* Product Image */}
+                    <div className="relative h-48 overflow-hidden z-10">
+                      <Image
+                        src={product.image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=300&fit=crop'}
+                        alt={product.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#05070a] to-transparent" />
+                      <div className="absolute top-4 right-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5">
+                        <span className={product.type === 'download' ? 'text-primary' : 'text-accent'}>
+                          {product.type === 'download' ? '📥' : '🔑'}
+                        </span>
+                        {product.type === 'download' ? 'Download' : 'Web Access'}
                       </div>
-                      <span className="text-gray-300">{feature}</span>
                     </div>
-                  ))}
-                </div>
 
-                {/* Pricing */}
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 mb-6 group-hover:border-primary/20 transition-colors duration-500">
-                  <div className="flex justify-between items-end mb-2">
-                    <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold">Harga</span>
-                    <span className="text-2xl font-black">Rp {(product.price / 1000).toLocaleString()}K</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-primary text-xs uppercase tracking-wider font-bold">Komisi Affiliate</span>
-                    <span className="text-primary font-black text-lg">{product.commission_rate}%</span>
-                  </div>
-                  <div className="mt-2 text-right">
-                    <span className="text-emerald-400 text-xs font-semibold">
-                      ≈ Rp {Math.floor(product.price * product.commission_rate / 100).toLocaleString()} / penjualan
-                    </span>
-                  </div>
-                </div>
+                    {/* Content */}
+                    <div className="p-6 flex flex-col flex-1 relative z-10">
+                      <h3 className="text-xl font-bold mb-3">{product.name}</h3>
+                      <p className="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">{product.description}</p>
 
-                {/* Actions */}
-                <div className="flex flex-col gap-2">
+                      {/* Features */}
+                      <div className="space-y-2.5 mb-6">
+                        {product.features?.slice(0, 3).map((feature: string, idx: number) => (
+                          <div key={idx} className="flex items-start gap-2 text-sm">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <span className="text-gray-300">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pricing */}
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 mb-6 group-hover:border-primary/20 transition-colors duration-500">
+                        <div className="flex justify-between items-end mb-2">
+                          <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold">Harga</span>
+                          <span className="text-2xl font-black">Rp {(product.price / 1000).toLocaleString()}K</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-primary text-xs uppercase tracking-wider font-bold">Komisi Affiliate</span>
+                          <span className="text-primary font-black text-lg">{product.commission_rate}%</span>
+                        </div>
+                        <div className="mt-2 text-right">
+                          <span className="text-emerald-400 text-xs font-semibold">
+                            ≈ Rp {Math.floor(product.price * product.commission_rate / 100).toLocaleString()} / penjualan
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => handleBuy(product.id)}
+                          className="w-full py-3 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-bold rounded-xl text-center transition-all duration-300 shadow-[0_0_15px_rgba(139,92,246,0.3)] text-sm"
+                        >
+                          🛒 Beli Sekarang
+                        </button>
+                        <Link
+                          href="/register"
+                          className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-center transition-colors duration-300 text-sm"
+                        >
+                          Mulai Jual (Daftar)
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+          </div>
+
+          {/* Right: Bundle Card (sticky) */}
+          <div className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-20">
+            {filteredProducts.find(p => p.id === 'bundle-001') && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="glass-card bg-gradient-to-br from-purple-600/20 to-indigo-600/10 rounded-2xl p-6 border border-purple-500/30"
+              >
+                <h3 className="text-xl font-bold text-white mb-3">ULTIMATE TRADING BUNDLE</h3>
+                <p className="text-sm text-gray-200 mb-4 line-clamp-4">
+                  Includes 23 premium courses covering all aspects of Forex trading.
+                </p>
+                <div className="flex justify-between items-center">
+                  <span className="text-primary font-bold text-lg">Rp 199.000</span>
                   <button
-                    onClick={() => handleBuy(product.id)}
-                    className="w-full py-3 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-bold rounded-xl text-center transition-all duration-300 shadow-[0_0_15px_rgba(139,92,246,0.3)] text-sm"
+                    className="px-3 py-1 bg-primary/20 text-primary rounded hover:bg-primary/30 transition"
+                    onClick={() => handleBuy('bundle-001')}
                   >
-                    🛒 Beli Sekarang
+                    Add to Cart
                   </button>
-                  <Link
-                    href="/register"
-                    className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-center transition-colors duration-300 text-sm"
-                  >
-                    Mulai Jual (Daftar)
-                  </Link>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            )}
+          </div>
         </div>
 
         {/* ── COMPARISON TABLE ── */}
