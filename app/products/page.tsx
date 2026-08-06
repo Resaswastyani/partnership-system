@@ -31,29 +31,66 @@ export default function ProductsPage() {
       .catch(() => setLoading(false))
   }, [])
 
-  const handleSimulateBuy = async (productId: string) => {
+  const handleBuy = async (productId: string) => {
     try {
       const userStr = localStorage.getItem('auth_user')
       if (!userStr) {
-        alert('Harap login terlebih dahulu untuk mensimulasikan pembelian.')
+        alert('Harap login terlebih dahulu untuk membeli produk.')
+        window.location.href = '/login'
         return
       }
       const user = JSON.parse(userStr)
-      const res = await fetch('/api/transactions', {
+
+      // Create payment
+      const res = await fetch('/api/payment/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ buyerId: user.id, productId })
       })
       const data = await res.json()
-      if (data.success) {
-        alert('✅ Pembelian Berhasil! ' + data.message)
+
+      if (!data.success) {
+        alert('Gagal membuat pembayaran: ' + data.error)
+        return
+      }
+
+      // Open Midtrans Snap popup
+      const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-TmuKXgFh17kvdyDm'
+      const snapScript = document.getElementById('midtrans-snap')
+      if (!snapScript) {
+        const script = document.createElement('script')
+        script.id = 'midtrans-snap'
+        script.src = 'https://app.sandbox.midtrans.com/snap/snap.js'
+        script.setAttribute('data-client-key', clientKey)
+        document.head.appendChild(script)
+        script.onload = () => openSnap(data.snapToken)
       } else {
-        alert('❌ Error: ' + data.error)
+        openSnap(data.snapToken)
       }
     } catch (err) {
-      alert('Gagal melakukan transaksi')
+      alert('Gagal melakukan pembayaran')
     }
   }
+
+  const openSnap = (snapToken: string) => {
+    // @ts-ignore
+    window.snap.pay(snapToken, {
+      onSuccess: (result: any) => {
+        alert('✅ Pembayaran berhasil! Terima kasih.')
+        window.location.href = '/dashboard?payment=success'
+      },
+      onPending: (result: any) => {
+        alert('⏳ Pembayaran sedang diproses. Cek email Anda.')
+      },
+      onError: (result: any) => {
+        alert('❌ Pembayaran gagal. Silakan coba lagi.')
+      },
+      onClose: () => {
+        console.log('Snap closed without completing payment')
+      }
+    })
+  }
+
 
   const faqs = [
     {
@@ -192,14 +229,14 @@ export default function ProductsPage() {
                 {/* Actions */}
                 <div className="flex flex-col gap-2">
                   <button
-                    onClick={() => handleSimulateBuy(product.id)}
-                    className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-xl text-center transition-all duration-300 shadow-[0_0_15px_rgba(16,185,129,0.3)] text-sm"
+                    onClick={() => handleBuy(product.id)}
+                    className="w-full py-3 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-bold rounded-xl text-center transition-all duration-300 shadow-[0_0_15px_rgba(139,92,246,0.3)] text-sm"
                   >
-                    🛒 Simulasi Beli
+                    🛒 Beli Sekarang
                   </button>
                   <Link
                     href="/register"
-                    className="w-full py-3 bg-white/10 hover:bg-primary text-white font-bold rounded-xl text-center transition-colors duration-300 text-sm"
+                    className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-center transition-colors duration-300 text-sm"
                   >
                     Mulai Jual (Daftar)
                   </Link>

@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 export default function DashboardPage() {
   const convertedReferrals = MOCK_REFERRALS.filter(r => r.status === 'converted')
   const [user, setUser] = useState<any>(null)
-  const [stats, setStats] = useState({ totalEarnings: 0, totalReferrals: 0 })
+  const [stats, setStats] = useState({ totalEarnings: 0, totalReferrals: 0, balance: 0 })
 
   useEffect(() => {
     const userStr = localStorage.getItem('auth_user')
@@ -78,10 +78,10 @@ export default function DashboardPage() {
         </motion.div>
         <motion.div variants={itemVariants}>
           <StatsCard
-            title="Pending Komisi"
-            value={`Rp 0`}
-            subtitle="Menunggu verifikasi"
-            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+            title="Saldo Tersedia"
+            value={`Rp ${stats.balance.toLocaleString()}`}
+            subtitle="Bisa ditarik ke rekening"
+            icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>}
             color="orange"
           />
         </motion.div>
@@ -96,9 +96,9 @@ export default function DashboardPage() {
         </motion.div>
         <motion.div variants={itemVariants}>
           <StatsCard
-            title="Conversion Rate"
-            value="N/A"
-            subtitle="Sedang dihitung"
+            title="Total Komisi"
+            value={`Rp ${stats.totalEarnings.toLocaleString()}`}
+            subtitle="Sepanjang waktu"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
             color="pink"
           />

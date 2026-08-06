@@ -12,13 +12,17 @@ export async function GET(request: Request) {
 
     const sql = getDb()
 
+    // Get balance directly from user record
+    const userResult = await sql`SELECT balance FROM users WHERE id = ${userId}`
+    const balance = userResult.length > 0 ? (parseInt(userResult[0].balance) || 0) : 0
+
     // Get total referrals (users where referred_by_id = userId)
     const referralsResult = await sql`
       SELECT COUNT(*) as count FROM users WHERE referred_by_id = ${userId}
     `
     const totalReferrals = parseInt(referralsResult[0].count)
 
-    // Get total commissions (sum of commission_amount where affiliate_id = userId)
+    // Get total commissions earned (sum from transactions - historical)
     const commissionsResult = await sql`
       SELECT SUM(commission_amount) as total FROM transactions WHERE affiliate_id = ${userId}
     `
@@ -28,7 +32,8 @@ export async function GET(request: Request) {
       success: true,
       stats: {
         totalReferrals,
-        totalEarnings
+        totalEarnings,
+        balance
       }
     })
   } catch (error) {

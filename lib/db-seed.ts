@@ -21,11 +21,9 @@ async function seed() {
     )
   `
 
-  console.log('🔄 Updating users table (adding referred_by_id)...')
-  await sql`
-    ALTER TABLE users 
-    ADD COLUMN IF NOT EXISTS referred_by_id INTEGER REFERENCES users(id)
-  `
+  console.log('🔄 Updating users table (adding referred_by_id, balance)...')
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by_id INTEGER REFERENCES users(id)`
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS balance INTEGER DEFAULT 0`
 
   console.log('🔄 Creating products table...')
   await sql`
@@ -42,6 +40,24 @@ async function seed() {
     )
   `
 
+  console.log('🔄 Creating orders table...')
+  await sql`
+    CREATE TABLE IF NOT EXISTS orders (
+      id SERIAL PRIMARY KEY,
+      order_id VARCHAR(100) UNIQUE NOT NULL,
+      buyer_id INTEGER REFERENCES users(id) NOT NULL,
+      product_id VARCHAR(50) REFERENCES products(id) NOT NULL,
+      amount INTEGER NOT NULL,
+      status VARCHAR(50) DEFAULT 'pending',
+      snap_token TEXT,
+      affiliate_id INTEGER REFERENCES users(id),
+      commission_amount INTEGER DEFAULT 0,
+      midtrans_transaction_id VARCHAR(255),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `
+
   console.log('🔄 Creating transactions table...')
   await sql`
     CREATE TABLE IF NOT EXISTS transactions (
@@ -55,6 +71,23 @@ async function seed() {
       created_at TIMESTAMP DEFAULT NOW()
     )
   `
+
+  console.log('🔄 Creating payouts table...')
+  await sql`
+    CREATE TABLE IF NOT EXISTS payouts (
+      id SERIAL PRIMARY KEY,
+      affiliate_id INTEGER REFERENCES users(id) NOT NULL,
+      amount INTEGER NOT NULL,
+      bank_name VARCHAR(100) NOT NULL,
+      account_number VARCHAR(50) NOT NULL,
+      account_name VARCHAR(255) NOT NULL,
+      status VARCHAR(50) DEFAULT 'pending',
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT NOW(),
+      processed_at TIMESTAMP
+    )
+  `
+
 
   // Check if admin already exists
   const existing = await sql`SELECT id FROM users WHERE email = 'admin@fbl.com'`
