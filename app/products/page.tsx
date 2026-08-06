@@ -20,8 +20,24 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
+  
+  // Checkout Modal State
+  const [checkoutModal, setCheckoutModal] = useState({ isOpen: false, productId: '' })
+  const [buyerInfo, setBuyerInfo] = useState({ name: '', email: '', phone: '' })
+  const [refCode, setRefCode] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
+    // Parse ref from URL
+    const params = new URLSearchParams(window.location.search)
+    if (params.has('ref')) setRefCode(params.get('ref'))
+
+    // Pre-fill user info if logged in
+    const userStr = localStorage.getItem('auth_user')
+    if (userStr) {
+      const parsed = JSON.parse(userStr)
+      setBuyerInfo(prev => ({ ...prev, name: parsed.name, email: parsed.email, phone: parsed.phone || '' }))
+    }
     fetch('/api/products')
       .then(res => res.json())
       .then(data => {
@@ -31,26 +47,34 @@ export default function ProductsPage() {
       .catch(() => setLoading(false))
   }, [])
 
-  const handleBuy = async (productId: string) => {
+  const handleBuy = (productId: string) => {
+    setCheckoutModal({ isOpen: true, productId })
+  }
+
+  const submitCheckout = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
     try {
-      const userStr = localStorage.getItem('auth_user')
-      if (!userStr) {
-        alert('Harap login terlebih dahulu untuk membeli produk.')
-        window.location.href = '/login'
-        return
+      const payload = {
+        productId: checkoutModal.productId,
+        name: buyerInfo.name,
+        email: buyerInfo.email,
+        phone: buyerInfo.phone,
+        refCode
       }
-      const user = JSON.parse(userStr)
 
       // Create payment
       const res = await fetch('/api/payment/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ buyerId: user.id, productId })
+        body: JSON.stringify(payload)
       })
       const data = await res.json()
 
       if (!data.success) {
         alert('Gagal membuat pembayaran: ' + data.error)
+        setIsSubmitting(false)
         return
       }
 
@@ -63,12 +87,18 @@ export default function ProductsPage() {
         script.src = 'https://app.sandbox.midtrans.com/snap/snap.js'
         script.setAttribute('data-client-key', clientKey)
         document.head.appendChild(script)
-        script.onload = () => openSnap(data.snapToken)
+        script.onload = () => {
+          setCheckoutModal({ isOpen: false, productId: '' })
+          openSnap(data.snapToken)
+        }
       } else {
+        setCheckoutModal({ isOpen: false, productId: '' })
         openSnap(data.snapToken)
       }
     } catch (err) {
       alert('Gagal melakukan pembayaran')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -384,6 +414,80 @@ export default function ProductsPage() {
         </motion.div>
 
       </div>
+
+      {/* Checkout Modal */}
+      <AnimatePresence>
+        {checkoutModal.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-[#0a0f16] border border-white/10 p-8 rounded-3xl relative"
+            >
+              <button
+                onClick={() => setCheckoutModal({ isOpen: false, productId: '' })}
+                className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+              
+              <h3 className="text-2xl font-bold text-white mb-2">Checkout Detail</h3>
+              <p className="text-gray-400 text-sm mb-6">Silakan isi data Anda untuk melanjutkan pembayaran.</p>
+
+              <form onSubmit={submitCheckout} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Nama Lengkap</label>
+                  <input
+                    required
+                    type="text"
+                    value={buyerInfo.name}
+                    onChange={(e) => setBuyerInfo({ ...buyerInfo, name: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none transition-colors"
+                    placeholder="Nama Anda"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">Email Akses</label>
+                  <input
+                    required
+                    type="email"
+                    value={buyerInfo.email}
+                    onChange={(e) => setBuyerInfo({ ...buyerInfo, email: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none transition-colors"
+                    placeholder="nama@email.com"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">Produk akan dikirim ke email ini.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">No. WhatsApp</label>
+                  <input
+                    required
+                    type="tel"
+                    value={buyerInfo.phone}
+                    onChange={(e) => setBuyerInfo({ ...buyerInfo, phone: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none transition-colors"
+                    placeholder="0812xxxxxx"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-4 mt-4 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-bold rounded-xl disabled:opacity-50 transition-all"
+                >
+                  {isSubmitting ? 'Memproses...' : 'Lanjutkan Pembayaran'}
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </main>

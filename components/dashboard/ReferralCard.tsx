@@ -11,7 +11,7 @@ export function ReferralCard() {
     const userStr = localStorage.getItem('auth_user')
     if (userStr) {
       const parsed = JSON.parse(userStr)
-      const link = `${window.location.origin}/register?ref=${parsed.referralCode}`
+      const link = `${window.location.origin}/products?ref=${parsed.referralCode}`
       setUser({
         referralCode: parsed.referralCode,
         referralLink: link
