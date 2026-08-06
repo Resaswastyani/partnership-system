@@ -24,7 +24,13 @@ export default function AdminLayout({
     if (!authUser) {
       router.push('/login')
     } else {
-      setUser(JSON.parse(authUser))
+      try {
+        setUser(JSON.parse(authUser))
+      } catch (e) {
+        console.error('Failed to parse auth_user from localStorage', e)
+        localStorage.removeItem('auth_user')
+        router.push('/login')
+      }
     }
   }, [router])
 
