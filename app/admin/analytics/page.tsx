@@ -2,6 +2,7 @@
 
 import { MOCK_REVENUE_DATA, MOCK_ALL_MEMBERS, PRODUCTS } from '@/lib/mock-data'
 import { motion } from 'framer-motion'
+import { formatRupiah } from '@/lib/utils'
 
 export default function AnalyticsPage() {
   const topAffiliates = [...MOCK_ALL_MEMBERS]
@@ -51,7 +52,7 @@ export default function AnalyticsPage() {
         <motion.div variants={itemVariants} className="glass-card rounded-2xl p-6 relative overflow-hidden border-l-4 border-l-primary hover:border-primary/50 transition-all">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
           <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold relative z-10">Total Revenue (12 Bulan)</p>
-          <p className="text-3xl font-bold text-primary mt-2 relative z-10">Rp {(totalRevenue / 1_000_000_000).toFixed(1)}B</p>
+          <p className="text-3xl font-bold text-primary mt-2 relative z-10">{formatRupiah(totalRevenue)}</p>
           <p className="text-xs text-primary/60 mt-2 relative z-10 flex items-center gap-1">
             <span className="text-emerald-400">↑ 12%</span> from last year
           </p>
@@ -60,7 +61,7 @@ export default function AnalyticsPage() {
         <motion.div variants={itemVariants} className="glass-card rounded-2xl p-6 relative overflow-hidden border-l-4 border-l-amber-500 hover:border-amber-500/50 transition-all">
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent pointer-events-none" />
           <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold relative z-10">Total Komisi</p>
-          <p className="text-3xl font-bold text-amber-400 mt-2 relative z-10">Rp {(totalCommissions / 1_000_000_000).toFixed(1)}B</p>
+          <p className="text-3xl font-bold text-amber-400 mt-2 relative z-10">{formatRupiah(totalCommissions)}</p>
           <p className="text-xs text-amber-300/60 mt-2 relative z-10 flex items-center gap-1">
             <span className="text-emerald-400">↑ 8%</span> from last year
           </p>
@@ -69,7 +70,7 @@ export default function AnalyticsPage() {
         <motion.div variants={itemVariants} className="glass-card rounded-2xl p-6 relative overflow-hidden border-l-4 border-l-emerald-500 hover:border-emerald-500/50 transition-all">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
           <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold relative z-10">Rata-rata Revenue/Bulan</p>
-          <p className="text-3xl font-bold text-emerald-400 mt-2 relative z-10">Rp {(avgMonthlyRevenue / 1_000_000).toFixed(0)}M</p>
+          <p className="text-3xl font-bold text-emerald-400 mt-2 relative z-10">{formatRupiah(avgMonthlyRevenue)}</p>
           <p className="text-xs text-emerald-300/60 mt-2 relative z-10">Estimate dari data aktual</p>
         </motion.div>
 
@@ -188,7 +189,7 @@ export default function AnalyticsPage() {
                       <p className="text-xs text-gray-400">{aff.totalReferrals} referrals</p>
                     </div>
                   </div>
-                  <p className="text-sm font-bold text-primary">Rp {(aff.totalEarnings / 1_000_000).toFixed(1)}M</p>
+                  <p className="text-sm font-bold text-primary">{formatRupiah(aff.totalEarnings)}</p>
                 </div>
               )
             })}

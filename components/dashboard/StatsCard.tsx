@@ -26,16 +26,13 @@ const iconColors = {
   pink: 'text-pink-400 bg-pink-400/10 border-pink-400/20'
 }
 
+import { formatRupiah } from '@/lib/utils'
+
 export function StatsCard({ title, value, subtitle, icon, color, trend }: StatsCardProps) {
   // Helper to format the displayed value
   const formatValue = (val: string | number) => {
     if (typeof val === 'number') {
-      // If less than one million, show full Rupiah amount
-      if (val < 1_000_000) {
-        return `Rp ${val.toLocaleString('id-ID')}`
-      }
-      // Otherwise, show in millions with one decimal place
-      return `Rp ${(val / 1_000_000).toFixed(1)}M`
+      return formatRupiah(val)
     }
     // If already a formatted string, return as is
     return val

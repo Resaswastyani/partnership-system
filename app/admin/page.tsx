@@ -5,6 +5,7 @@ import { ActivityFeed } from '@/components/admin/ActivityFeed'
 import { MOCK_DASHBOARD_STATS, MOCK_REVENUE_DATA, MOCK_ACTIVITIES, MOCK_ALL_MEMBERS, MOCK_PAYOUTS } from '@/lib/mock-data'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { formatRupiah } from '@/lib/utils'
 
 export default function AdminDashboard() {
   const [timeRange] = useState('month')
@@ -75,7 +76,7 @@ export default function AdminDashboard() {
           <div className="text-left md:text-right bg-white/5 border border-white/10 p-5 rounded-xl backdrop-blur-sm">
             <p className="text-gray-400 text-sm mb-1 uppercase tracking-wider font-medium">Total Revenue</p>
             <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent to-emerald-300">
-              Rp {(stats.totalRevenue / 1_000_000).toFixed(1)}M
+              {formatRupiah(stats.totalRevenue)}
             </p>
           </div>
         </div>
@@ -106,7 +107,7 @@ export default function AdminDashboard() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Komisi Pending"
-            value={`Rp ${(stats.totalCommissionsPending / 1_000_000).toFixed(1)}M`}
+            value={formatRupiah(stats.totalCommissionsPending)}
             subtitle="Siap dibayar"
             icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             color="orange"
@@ -153,7 +154,7 @@ export default function AdminDashboard() {
                     }}
                   >
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold bg-white/10 px-2 py-1 rounded backdrop-blur-md">
-                      {(data.revenue / 1_000_000).toFixed(0)}M
+                      {formatRupiah(data.revenue)}
                     </div>
                   </div>
                   <span className="text-gray-400 text-xs mt-2 font-medium">{data.month}</span>
@@ -166,15 +167,15 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Avg Monthly</p>
-                <p className="text-white font-bold text-lg">Rp {(MOCK_REVENUE_DATA.reduce((a, b) => a + b.revenue, 0) / MOCK_REVENUE_DATA.length / 1_000_000).toFixed(1)}M</p>
+                <p className="text-white font-bold text-lg">{formatRupiah(MOCK_REVENUE_DATA.reduce((a, b) => a + b.revenue, 0) / MOCK_REVENUE_DATA.length)}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Peak Month</p>
-                <p className="text-white font-bold text-lg">Rp {(Math.max(...MOCK_REVENUE_DATA.map(d => d.revenue)) / 1_000_000).toFixed(1)}M</p>
+                <p className="text-white font-bold text-lg">{formatRupiah(Math.max(...MOCK_REVENUE_DATA.map(d => d.revenue)))}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Year</p>
-                <p className="text-white font-bold text-lg text-primary">Rp {(MOCK_REVENUE_DATA.reduce((a, b) => a + b.revenue, 0) / 1_000_000).toFixed(1)}M</p>
+                <p className="text-white font-bold text-lg text-primary">{formatRupiah(MOCK_REVENUE_DATA.reduce((a, b) => a + b.revenue, 0))}</p>
               </div>
             </div>
           </div>

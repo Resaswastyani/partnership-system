@@ -4,6 +4,7 @@ import { ReferralTable } from '@/components/dashboard/ReferralTable'
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { formatRupiah } from '@/lib/utils'
 
 export default function ReferralsPage() {
   const [user, setUser] = useState<any>(null)
@@ -77,7 +78,7 @@ export default function ReferralsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Komisi"
-            value={`Rp ${(totalCommission / 1_000_000).toFixed(1)}M`}
+            value={formatRupiah(totalCommission)}
             subtitle="Dari referral berhasil"
             icon="💰"
             color="orange"

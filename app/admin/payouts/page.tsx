@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { DataTable } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { motion } from 'framer-motion'
+import { formatRupiah } from '@/lib/utils'
 
 interface PayoutModal {
   visible: boolean
@@ -178,9 +179,9 @@ export default function PayoutsPage() {
     { label: 'Pending Approval', value: stats.pending, color: 'text-amber-400', icon: '⏳', glow: 'rgba(245,158,11,0.1)' },
     { label: 'Approved', value: stats.approved, color: 'text-blue-400', icon: '✅', glow: 'rgba(59,130,246,0.1)' },
     { label: 'Processed', value: stats.processed, color: 'text-emerald-400', icon: '💸', glow: 'rgba(16,185,129,0.1)' },
-    { label: 'Total Pending', value: `Rp ${(stats.totalPending / 1_000_000).toFixed(1)}M`, color: 'text-primary', icon: '💰', glow: 'rgba(251,191,36,0.1)' },
-    { label: 'Total Processed', value: `Rp ${(stats.totalProcessed / 1_000_000).toFixed(1)}M`, color: 'text-emerald-400', icon: '🏦', glow: 'rgba(16,185,129,0.1)' },
-    { label: 'Rata-rata Payout', value: `Rp ${(stats.averagePayout / 1_000_000).toFixed(1)}M`, color: 'text-purple-400', icon: '📊', glow: 'rgba(168,85,247,0.1)' },
+    { label: 'Total Pending', value: formatRupiah(stats.totalPending), color: 'text-primary', icon: '💰', glow: 'rgba(251,191,36,0.1)' },
+    { label: 'Total Processed', value: formatRupiah(stats.totalProcessed), color: 'text-emerald-400', icon: '🏦', glow: 'rgba(16,185,129,0.1)' },
+    { label: 'Rata-rata Payout', value: formatRupiah(stats.averagePayout), color: 'text-purple-400', icon: '📊', glow: 'rgba(168,85,247,0.1)' },
   ]
 
   return (

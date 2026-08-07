@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { DataTable } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { motion } from 'framer-motion'
+import { formatRupiah } from '@/lib/utils'
 
 interface ActionModal {
   visible: boolean
@@ -138,8 +139,8 @@ export default function MembersPage() {
     { label: 'Aktif', value: stats.active, color: 'text-emerald-400', icon: '✅' },
     { label: 'Menunggu Approval', value: stats.pending, color: 'text-amber-400', icon: '⏳' },
     { label: 'Ditangguhkan', value: stats.suspended, color: 'text-red-400', icon: '🚫' },
-    { label: 'Total Komisi Pending', value: `Rp ${(stats.totalCommissions / 1_000_000).toFixed(1)}M`, color: 'text-sky-400', icon: '💳' },
-    { label: 'Total Earnings', value: `Rp ${(stats.totalEarnings / 1_000_000).toFixed(1)}M`, color: 'text-emerald-400', icon: '💰' },
+    { label: 'Total Komisi Pending', value: formatRupiah(stats.totalCommissions), color: 'text-sky-400', icon: '💳' },
+    { label: 'Total Earnings', value: formatRupiah(stats.totalEarnings), color: 'text-emerald-400', icon: '💰' },
   ]
 
   return (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { motion } from 'framer-motion'
+import { formatRupiah } from '@/lib/utils'
 
 interface Product {
   id: string
@@ -109,7 +110,7 @@ export default function ProductsPage() {
   const statCards = [
     { label: 'Total Produk', value: stats.total, color: 'text-primary', icon: '📦' },
     { label: 'Aktif', value: stats.active, color: 'text-emerald-400', icon: '✅' },
-    { label: 'Estimasi Revenue', value: `Rp ${(stats.totalRevenue / 1_000_000).toFixed(0)}M`, color: 'text-amber-400', icon: '💰' },
+    { label: 'Estimasi Revenue', value: formatRupiah(stats.totalRevenue), color: 'text-amber-400', icon: '💰' },
     { label: 'Rata-rata Komisi', value: `${stats.avgCommission}%`, color: 'text-sky-400', icon: '📊' },
   ]
 

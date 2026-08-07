@@ -3,7 +3,7 @@
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-
+import { formatRupiah } from '@/lib/utils'
 export default function CommissionsPage() {
   const [data, setData] = useState<any>({
     stats: { totalEarnings: 0, pendingCommissions: 0, averageCommission: 0 },
@@ -136,7 +136,7 @@ export default function CommissionsPage() {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Average Commission"
-            value={loading ? 'Loading...' : `Rp ${(data.stats.averageCommission / 1_000_000).toFixed(2)}M`}
+            value={loading ? 'Loading...' : formatRupiah(data.stats.averageCommission)}
             subtitle="Per referral"
             icon="📊"
             color="cyan"
@@ -180,7 +180,7 @@ export default function CommissionsPage() {
                           : 'bg-gradient-to-r from-amber-500/80 to-amber-400'
                       }`}
                     >
-                      Rp {(mData.amount / 1_000_000).toFixed(1)}M
+                      {formatRupiah(mData.amount)}
                     </motion.div>
                   </div>
                 </div>
@@ -213,7 +213,7 @@ export default function CommissionsPage() {
                   <p className="text-gray-400 text-sm mt-0.5">Komisi yang sudah verified</p>
                 </div>
                 <p className="text-emerald-400 font-bold text-xl">
-                  {loading ? '...' : `Rp ${(thisMonthPaid / 1_000_000).toFixed(1)}M`}
+                  {loading ? '...' : formatRupiah(thisMonthPaid)}
                 </p>
               </div>
               
@@ -310,7 +310,7 @@ export default function CommissionsPage() {
           ) : data.productCommissions.map((p: any, idx: number) => (
             <div key={idx} className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1">
               <p className="text-gray-400 text-sm mb-3 h-10 font-medium">{p.name}</p>
-              <p className="text-white font-bold text-3xl mb-2">Rp {(p.totalCommission / 1_000_000).toFixed(1)}M</p>
+              <p className="text-white font-bold text-3xl mb-2">{formatRupiah(p.totalCommission)}</p>
               <p className="text-emerald-400 text-sm font-semibold flex items-center gap-1">
                 <span>✓</span> {p.salesCount} penjualan
               </p>
