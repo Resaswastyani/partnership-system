@@ -3,21 +3,49 @@
 import { useState, useEffect } from 'react'
 import { DataTable } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { formatRupiah } from '@/lib/utils'
+
+interface Member {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  status: string
+  totalReferrals: number
+  totalEarnings: number
+  pendingCommissions: number
+}
 
 interface ActionModal {
   visible: boolean
-  type: 'approve' | 'reject' | 'suspend' | 'delete'
-  member: any
+  type: 'create' | 'edit' | 'approve' | 'suspend' | 'delete' | null
+  member: Member | null
+}
+
+const EMPTY_FORM = {
+  name: '',
+  email: '',
+  phone: '',
+  password: '',
+  status: 'active'
 }
 
 export default function MembersPage() {
-  const [members, setMembers] = useState<any[]>([])
+  const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState<ActionModal>({ visible: false, type: 'approve', member: null })
+  const [modal, setModal] = useState<ActionModal>({ visible: false, type: null, member: null })
+  const [formData, setFormData] = useState({ ...EMPTY_FORM })
+  const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  const fetchMembers = () => {
+    setLoading(true)
     fetch('/api/admin/members')
       .then(res => res.json())
       .then(data => {
@@ -30,6 +58,10 @@ export default function MembersPage() {
         console.error(err)
         setLoading(false)
       })
+  }
+
+  useEffect(() => {
+    fetchMembers()
   }, [])
 
   const stats = {
@@ -41,24 +73,93 @@ export default function MembersPage() {
     totalCommissions: members.reduce((sum, m) => sum + m.pendingCommissions, 0)
   }
 
-  const handleAction = (type: 'approve' | 'reject' | 'suspend' | 'delete', member: any) => {
-    setModal({ visible: true, type, member })
+  const openCreate = () => {
+    setFormData({ ...EMPTY_FORM })
+    setModal({ visible: true, type: 'create', member: null })
   }
 
-  const confirmAction = async () => {
-    if (!modal.member) return
+  const openEdit = (member: Member) => {
+    setFormData({
+      name: member.name,
+      email: member.email,
+      phone: member.phone || '',
+      password: '', // blank intentionally for edit
+      status: member.status
+    })
+    setModal({ visible: true, type: 'edit', member })
+  }
 
-    let newStatus = ''
-    switch (modal.type) {
-      case 'approve': newStatus = 'active'; break
-      case 'suspend': newStatus = 'suspended'; break
-      case 'delete':
-        // Optional: Implement hard delete or soft delete
-        setMembers(members.filter(m => m.id !== modal.member.id))
-        setModal({ visible: false, type: 'approve', member: null })
-        return
+  const closeModal = () => setModal({ visible: false, type: null, member: null })
+
+  const handleSave = async () => {
+    if (!formData.name || !formData.email) {
+      showToast('Nama dan Email harus diisi', 'error')
+      return
     }
 
+    if (modal.type === 'create' && (!formData.password || formData.password.length < 6)) {
+      showToast('Password minimal 6 karakter', 'error')
+      return
+    }
+
+    setSaving(true)
+
+    try {
+      const isCreate = modal.type === 'create'
+      const payload = isCreate 
+        ? formData 
+        : { id: modal.member?.id, ...formData }
+
+      // If editing and password is empty, don't send it to preserve old password
+      if (!isCreate && !payload.password) {
+        delete payload.password
+      }
+
+      const res = await fetch('/api/admin/members', {
+        method: isCreate ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      
+      const data = await res.json()
+      
+      if (data.success) {
+        showToast(isCreate ? 'Member berhasil ditambahkan' : 'Member berhasil diperbarui')
+        fetchMembers()
+        closeModal()
+      } else {
+        showToast(data.error || 'Gagal menyimpan', 'error')
+      }
+    } catch (error) {
+      showToast('Gagal terhubung ke server', 'error')
+    }
+
+    setSaving(false)
+  }
+
+  const handleDelete = async () => {
+    if (!modal.member) return
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/admin/members?id=${modal.member.id}`, { method: 'DELETE' })
+      const data = await res.json()
+      
+      if (data.success) {
+        showToast('Member berhasil dihapus (Soft Delete)')
+        fetchMembers()
+        closeModal()
+      } else {
+        showToast(data.error || 'Gagal menghapus', 'error')
+      }
+    } catch (error) {
+      showToast('Gagal terhubung ke server', 'error')
+    }
+    setSaving(false)
+  }
+
+  const handleUpdateStatus = async (newStatus: string) => {
+    if (!modal.member) return
+    setSaving(true)
     try {
       const res = await fetch('/api/admin/members', {
         method: 'PUT',
@@ -67,17 +168,16 @@ export default function MembersPage() {
       })
       const data = await res.json()
       if (data.success) {
-        setMembers(members.map(m =>
-          m.id === modal.member.id ? { ...m, status: newStatus } : m
-        ))
+        showToast(`Status berhasil diubah menjadi ${newStatus}`)
+        fetchMembers()
+        closeModal()
       } else {
-        alert('Gagal update status: ' + data.error)
+        showToast(data.error || 'Gagal update status', 'error')
       }
     } catch (error) {
-      alert('Gagal update status')
+      showToast('Gagal update status', 'error')
     }
-
-    setModal({ visible: false, type: 'approve', member: null })
+    setSaving(false)
   }
 
   const columns = [
@@ -106,7 +206,7 @@ export default function MembersPage() {
       key: 'totalEarnings',
       label: 'Total Earnings',
       render: (val: number) => (
-        <span className="text-emerald-400 font-semibold">Rp {val.toLocaleString('id-ID')}</span>
+        <span className="text-emerald-400 font-semibold">{formatRupiah(val)}</span>
       ),
       sortable: true
     },
@@ -114,7 +214,7 @@ export default function MembersPage() {
       key: 'pendingCommissions',
       label: 'Pending Commission',
       render: (val: number) => (
-        <span className="text-amber-400 font-semibold">Rp {val.toLocaleString('id-ID')}</span>
+        <span className="text-amber-400 font-semibold">{formatRupiah(val)}</span>
       )
     },
     {
@@ -144,26 +244,39 @@ export default function MembersPage() {
   ]
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-8"
-    >
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }}
+            className={`fixed top-6 right-6 z-[999] px-6 py-3 rounded-2xl font-semibold text-sm shadow-2xl border backdrop-blur-xl flex items-center gap-3 ${
+              toast.type === 'success'
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                : 'bg-red-500/20 text-red-300 border-red-500/30'
+            }`}
+          >
+            <span>{toast.type === 'success' ? '✅' : '❌'}</span>
+            {toast.msg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
-      <motion.div variants={itemVariants} className="space-y-1">
-        <h1 className="text-3xl font-bold text-white tracking-wide">Kelola Members</h1>
-        <p className="text-gray-400">Lihat dan kelola semua affiliate member aktif</p>
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-wide">Kelola Members</h1>
+          <p className="text-gray-400">Lihat dan kelola semua affiliate member aktif</p>
+        </div>
+        <button onClick={openCreate} className="flex items-center gap-2 px-5 py-3 bg-primary/20 hover:bg-primary/30 border border-primary/40 text-primary rounded-xl font-bold text-sm transition-all shadow-[0_0_20px_rgba(251,191,36,0.1)] hover:shadow-[0_0_25px_rgba(251,191,36,0.25)]">
+          <span className="text-lg">➕</span> Tambah Member
+        </button>
       </motion.div>
 
       {/* Stats */}
       <motion.div variants={containerVariants} className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {statCards.map((card, idx) => (
-          <motion.div
-            key={idx}
-            variants={itemVariants}
-            className="glass-card rounded-2xl p-5 hover:border-white/15 transition-all group relative overflow-hidden"
-          >
+          <motion.div key={idx} variants={itemVariants} className="glass-card rounded-2xl p-5 hover:border-white/15 transition-all group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-16 h-16 bg-white/[0.02] rounded-full blur-[20px] pointer-events-none" />
             <div className="flex items-center gap-3 mb-3">
               <span className="text-xl">{card.icon}</span>
@@ -185,9 +298,6 @@ export default function MembersPage() {
             <button className="px-4 py-2 bg-white/5 border border-white/10 text-gray-300 rounded-xl text-sm font-medium hover:bg-white/10 hover:text-white transition-all">
               Export CSV
             </button>
-            <button className="px-4 py-2 bg-primary/10 border border-primary/30 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all shadow-[0_0_15px_rgba(251,191,36,0.1)]">
-              + Tambah Member
-            </button>
           </div>
         </div>
         <div className="relative z-10">
@@ -195,74 +305,138 @@ export default function MembersPage() {
             columns={columns}
             data={members}
             actions={[
-              { label: 'Edit', onClick: (m) => handleAction('approve', m) },
-              { label: 'Suspend', onClick: (m) => handleAction('suspend', m) }
+              { label: 'Edit', onClick: (m) => openEdit(m) },
+              { label: 'Approve', onClick: (m) => setModal({ visible: true, type: 'approve', member: m }) },
+              { label: 'Suspend', onClick: (m) => setModal({ visible: true, type: 'suspend', member: m }) },
+              { label: 'Hapus', onClick: (m) => setModal({ visible: true, type: 'delete', member: m }) }
             ]}
           />
         </div>
       </motion.div>
 
-      {/* Modal */}
-      {modal.visible && modal.member && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        >
+      {/* Create / Edit Modal */}
+      <AnimatePresence>
+        {(modal.type === 'create' || modal.type === 'edit') && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="glass-card rounded-2xl p-8 max-w-md w-full border border-white/10"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={(e) => e.target === e.currentTarget && closeModal()}
           >
-            <h3 className="text-xl font-bold mb-6 text-white flex items-center gap-2">
-              {modal.type === 'approve' && <><span>✅</span> Setujui Affiliate</>}
-              {modal.type === 'suspend' && <><span>⛔</span> Suspend Affiliate</>}
-              {modal.type === 'delete' && <><span>🗑️</span> Hapus Affiliate</>}
-            </h3>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="glass-card rounded-2xl w-full max-w-md overflow-hidden"
+            >
+              <div className="bg-[#0f0a1e]/90 p-6 border-b border-white/10 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <span className="text-primary">{modal.type === 'create' ? '➕' : '✏️'}</span>
+                  {modal.type === 'create' ? 'Tambah Member' : 'Edit Member'}
+                </h3>
+                <button onClick={closeModal} className="text-gray-400 hover:text-white text-2xl leading-none">×</button>
+              </div>
 
-            <div className="space-y-3 mb-6 p-5 rounded-xl bg-white/5 border border-white/10">
-              <div className="flex justify-between">
-                <p className="text-gray-400 text-sm">Nama</p>
-                <p className="text-white font-semibold">{modal.member.name}</p>
+              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div>
+                  <label className="text-xs text-gray-400 uppercase tracking-wider font-semibold block mb-2">Nama Lengkap *</label>
+                  <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 uppercase tracking-wider font-semibold block mb-2">Email *</label>
+                  <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 uppercase tracking-wider font-semibold block mb-2">No. WhatsApp</label>
+                  <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 uppercase tracking-wider font-semibold block mb-2">
+                    Password {modal.type === 'edit' && <span className="text-gray-500 normal-case">(Opsional - isi untuk reset)</span>}
+                  </label>
+                  <input type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })}
+                    placeholder={modal.type === 'edit' ? 'Biarkan kosong jika tidak ingin ganti' : 'Minimal 6 karakter'}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 uppercase tracking-wider font-semibold block mb-2">Status</label>
+                  <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-primary/50 transition-all"
+                  >
+                    <option value="active" className="bg-[#1a0f3c]">✅ Active</option>
+                    <option value="pending" className="bg-[#1a0f3c]">⏳ Pending</option>
+                    <option value="suspended" className="bg-[#1a0f3c]">🚫 Suspended</option>
+                  </select>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <p className="text-gray-400 text-sm">Email</p>
-                <p className="text-gray-300 text-sm">{modal.member.email}</p>
-              </div>
-              <div className="flex justify-between">
-                <p className="text-gray-400 text-sm">Total Referral</p>
-                <p className="text-white font-semibold">{modal.member.totalReferrals}</p>
-              </div>
-              <div className="flex justify-between">
-                <p className="text-gray-400 text-sm">Total Earnings</p>
-                <p className="text-emerald-400 font-bold">Rp {modal.member.totalEarnings.toLocaleString('id-ID')}</p>
-              </div>
-            </div>
 
-            <p className="text-sm text-gray-400 mb-8 bg-white/5 p-4 rounded-xl border border-white/5">
-              {modal.type === 'approve' && 'Apakah Anda yakin ingin menyetujui affiliate ini?'}
-              {modal.type === 'suspend' && 'Apakah Anda yakin ingin menghentikan affiliate ini? Mereka tidak dapat membuat referral baru.'}
-              {modal.type === 'delete' && 'Apakah Anda yakin ingin menghapus affiliate ini? Tindakan ini tidak dapat dibatalkan.'}
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setModal({ visible: false, type: 'approve', member: null })}
-                className="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-gray-300 hover:text-white font-medium"
-              >
-                Batal
-              </button>
-              <button
-                onClick={confirmAction}
-                className="flex-1 px-4 py-3 rounded-xl bg-primary/80 hover:bg-primary border border-primary/30 transition-all text-background font-bold shadow-[0_0_20px_rgba(251,191,36,0.3)]"
-              >
-                Konfirmasi
-              </button>
-            </div>
+              <div className="bg-[#0f0a1e]/90 p-6 border-t border-white/10 flex gap-3">
+                <button onClick={closeModal} className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-all text-sm font-medium">Batal</button>
+                <button onClick={handleSave} disabled={saving} className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-amber-500 text-black font-bold transition-all text-sm disabled:opacity-50 shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                  {saving ? '⏳ Menyimpan...' : '💾 Simpan'}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
+
+      {/* Action / Delete Modals */}
+      <AnimatePresence>
+        {(modal.type === 'approve' || modal.type === 'suspend' || modal.type === 'delete') && modal.member && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className={`glass-card rounded-2xl p-8 max-w-sm w-full text-center ${modal.type === 'delete' ? 'border-red-500/30' : ''}`}
+            >
+              <div className="text-5xl mb-4">
+                {modal.type === 'approve' && '✅'}
+                {modal.type === 'suspend' && '🚫'}
+                {modal.type === 'delete' && '🗑️'}
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">
+                {modal.type === 'approve' && 'Setujui Member?'}
+                {modal.type === 'suspend' && 'Suspend Member?'}
+                {modal.type === 'delete' && 'Hapus Member?'}
+              </h3>
+              
+              <p className="text-white font-semibold mb-2">"{modal.member.name}"</p>
+              
+              <p className="text-gray-400 text-xs mb-8">
+                {modal.type === 'approve' && 'Member akan diaktifkan dan dapat menggunakan semua fitur.'}
+                {modal.type === 'suspend' && 'Member ini tidak akan bisa login ke dashboard.'}
+                {modal.type === 'delete' && 'Tindakan ini menggunakan Soft Delete. Member tidak dapat login, tapi riwayat datanya tetap tersimpan.'}
+              </p>
+              
+              <div className="flex gap-3">
+                <button onClick={closeModal} className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-all text-sm font-medium">Batal</button>
+                <button 
+                  onClick={() => {
+                    if (modal.type === 'delete') handleDelete()
+                    else handleUpdateStatus(modal.type === 'approve' ? 'active' : 'suspended')
+                  }} 
+                  disabled={saving} 
+                  className={`flex-1 px-4 py-3 rounded-xl border font-bold transition-all text-sm disabled:opacity-50 ${
+                    modal.type === 'delete' 
+                      ? 'bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30' 
+                      : 'bg-primary/20 border-primary/30 text-primary hover:bg-primary/30'
+                  }`}
+                >
+                  {saving ? '⏳ Memproses...' : 'Ya, Lanjutkan'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
