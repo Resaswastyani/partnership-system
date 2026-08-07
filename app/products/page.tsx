@@ -139,9 +139,13 @@ export default function ProductsPage() {
     // @ts-ignore
     window.snap.pay(snapToken, {
       onSuccess: (result: any) => {
-        // Redirect to panduan-ea first so user can see their license/guide
-        // From panduan-ea there is a link to buyer dashboard
-        window.location.href = `/panduan-ea?order=${orderId}`
+        // Smart redirect: EA → panduan-ea, others → download
+        const EA_PRODUCT_ID = 'prod-002'
+        if (productId === EA_PRODUCT_ID) {
+          window.location.href = `/panduan-ea?order=${orderId}`
+        } else {
+          window.location.href = `/download?order=${orderId}`
+        }
       },
       onPending: (result: any) => {
         alert('⏳ Pembayaran sedang diproses. Cek email Anda.')

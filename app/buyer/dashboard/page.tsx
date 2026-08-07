@@ -52,6 +52,30 @@ export default function BuyerDashboard() {
     }
   }
 
+  // Map product category/id to the correct guide page
+  const handleAccess = (purchase: PurchasedProduct) => {
+    const cat = purchase.product.category?.toLowerCase() ?? ''
+    const pid = purchase.product.id?.toLowerCase() ?? ''
+
+    if (cat.includes('ea') || pid.includes('ea') || pid === 'prod-002') {
+      router.push(`/panduan-ea?order=${purchase.orderId}`)
+    } else {
+      // All non-EA products → download page
+      router.push(`/download?order=${purchase.orderId}`)
+    }
+  }
+
+  const getAccessLabel = (product: PurchasedProduct['product']) => {
+    const cat = product.category?.toLowerCase() ?? ''
+    const pid = product.id?.toLowerCase() ?? ''
+
+    if (cat.includes('ea') || pid.includes('ea') || pid === 'prod-002') return '🤖 Lihat Panduan EA'
+    if (cat.includes('jurnal')) return '📒 Unduh Jurnal Trading'
+    if (cat.includes('webinar')) return '🎥 Unduh Materi Webinar'
+    if (cat.includes('materi')) return '📚 Unduh Materi'
+    return '⬇️ Download Produk'
+  }
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -143,17 +167,10 @@ export default function BuyerDashboard() {
                     </div>
 
                     <button
-                      onClick={() => {
-                        if (purchase.product.category.toLowerCase().includes('ea')) {
-                          router.push(`/panduan-ea?order=${purchase.orderId}`)
-                        } else {
-                          // Handle other products access
-                          alert(`Akses ke ${purchase.product.name} akan segera tersedia`)
-                        }
-                      }}
+                      onClick={() => handleAccess(purchase)}
                       className="w-full px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 transition-all font-bold text-sm rounded-xl flex items-center justify-center gap-2"
                     >
-                      {purchase.product.category.toLowerCase().includes('ea') ? '🤖 Lihat Panduan EA' : '🚀 Akses Produk'}
+                      {getAccessLabel(purchase.product)}
                     </button>
                   </div>
                 </div>

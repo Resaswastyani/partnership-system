@@ -54,10 +54,15 @@ function DownloadContent() {
       <div className="flex items-center justify-center min-h-[60vh] px-4">
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-8 rounded-2xl text-center max-w-md w-full">
           <h2 className="text-xl font-bold mb-2">Akses Ditolak</h2>
-          <p className="mb-4">{error}</p>
-          <Link href="/products" className="text-primary hover:underline">
-            Kembali ke Produk
-          </Link>
+          <p className="mb-6">{error}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/products" className="px-5 py-2.5 bg-white/5 border border-white/10 text-gray-300 hover:text-white rounded-xl text-sm font-semibold transition-all">
+              Kembali ke Produk
+            </Link>
+            <Link href="/buyer/dashboard" className="px-5 py-2.5 bg-primary/20 border border-primary/30 text-primary rounded-xl text-sm font-semibold transition-all">
+              👤 Dashboard Saya
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -103,7 +108,14 @@ function DownloadContent() {
           </div>
 
           <button
-            onClick={() => alert('Fitur download akan segera tersedia (contoh file sedang diproses)!')}
+            onClick={() => {
+              // TODO: Replace with actual download URL from product
+              if (orderInfo?.download_url) {
+                window.open(orderInfo.download_url, '_blank')
+              } else {
+                window.open(`/api/order/download?orderId=${orderId}`, '_blank')
+              }
+            }}
             className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white rounded-xl font-black text-lg transition-all shadow-[0_0_20px_rgba(139,92,246,0.3)]"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -112,6 +124,28 @@ function DownloadContent() {
             Download Sekarang
           </button>
         </div>
+      </motion.div>
+
+      {/* Dashboard Access Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-gradient-to-r from-emerald-900/40 to-teal-900/30 border border-emerald-500/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-[0_0_30px_rgba(16,185,129,0.1)]"
+      >
+        <div className="text-left">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-2xl">🎉</span>
+            <p className="text-emerald-400 font-bold text-lg">Pembelian Berhasil!</p>
+          </div>
+          <p className="text-gray-300 text-sm">Produk ini sudah tersimpan di akun Anda. Akses kapan saja dari Dashboard Member Anda.</p>
+        </div>
+        <Link
+          href="/buyer/dashboard"
+          className="whitespace-nowrap flex items-center gap-2 px-6 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm"
+        >
+          <span>👤</span> Lihat Dashboard Saya →
+        </Link>
       </motion.div>
     </div>
   )
