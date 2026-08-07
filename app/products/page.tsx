@@ -125,9 +125,9 @@ export default function ProductsPage() {
       onSuccess: (result: any) => {
         alert('✅ Pembayaran berhasil! Terima kasih.')
         if (productId === 'prod-002') {
-          window.location.href = `/dashboard/ea-guide?order=${orderId}`
+          window.location.href = `/panduan-ea?order=${orderId}`
         } else {
-          window.location.href = '/dashboard/my-products'
+          window.location.href = `/download?order=${orderId}`
         }
       },
       onPending: (result: any) => {

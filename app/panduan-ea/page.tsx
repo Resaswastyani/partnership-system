@@ -4,6 +4,8 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { Header } from '@/components/Header'
+import { Footer } from '@/components/Footer'
 
 function EAGuideContent() {
   const searchParams = useSearchParams()
@@ -16,25 +18,17 @@ function EAGuideContent() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const userStr = localStorage.getItem('auth_user')
-        if (!userStr) {
-          window.location.href = '/login'
-          return
-        }
-        
-        const user = JSON.parse(userStr)
-        const res = await fetch(`/api/my-products?userId=${user.id}`)
+        const res = await fetch(`/api/order?orderId=${orderId}`)
         const data = await res.json()
         
         if (data.success) {
-          const order = data.orders.find((o: any) => o.order_id === orderId && o.product_id === 'prod-002')
-          if (order) {
-            setOrderInfo(order)
+          if (data.order.product_id === 'prod-002') {
+            setOrderInfo(data.order)
           } else {
-            setError('Pesanan EA Robot tidak ditemukan atau belum selesai.')
+            setError('Pesanan ini bukan untuk produk EA Robot.')
           }
         } else {
-          setError(data.error || 'Gagal memuat detail pesanan')
+          setError(data.error || 'Pesanan tidak ditemukan atau belum selesai.')
         }
       } catch (err) {
         setError('Terjadi kesalahan saat memuat data')
@@ -61,28 +55,23 @@ function EAGuideContent() {
 
   if (error) {
     return (
-      <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-8 rounded-2xl text-center">
-        <h2 className="text-xl font-bold mb-2">Akses Ditolak</h2>
-        <p className="mb-4">{error}</p>
-        <Link href="/dashboard/my-products" className="text-primary hover:underline">
-          Kembali ke Produk Saya
-        </Link>
+      <div className="flex items-center justify-center min-h-[60vh] px-4">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-8 rounded-2xl text-center max-w-md w-full">
+          <h2 className="text-xl font-bold mb-2">Akses Ditolak</h2>
+          <p className="mb-4">{error}</p>
+          <Link href="/products" className="text-primary hover:underline">
+            Kembali ke Produk
+          </Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-20">
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/dashboard/my-products" className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors">
-          <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Panduan EA Robot FBL</h1>
-          <p className="text-gray-400 mt-1">Ikuti langkah-langkah di bawah ini untuk memulai.</p>
-        </div>
+    <div className="max-w-4xl mx-auto space-y-8 pt-40 pb-20 px-4">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">Panduan EA Robot FBL</h1>
+        <p className="text-gray-400 mt-4 text-lg">Terima kasih atas pembelian Anda. Ikuti langkah-langkah di bawah ini untuk memulai.</p>
       </div>
 
       {/* License Card */}
@@ -191,8 +180,12 @@ function EAGuideContent() {
 
 export default function EAGuidePage() {
   return (
-    <Suspense fallback={<div className="text-center py-10 text-gray-400">Loading guide...</div>}>
-      <EAGuideContent />
-    </Suspense>
+    <main className="w-full min-h-screen bg-[#05070a] text-white selection:bg-primary/30 selection:text-white">
+      <Header />
+      <Suspense fallback={<div className="text-center py-40 text-gray-400">Loading guide...</div>}>
+        <EAGuideContent />
+      </Suspense>
+      <Footer />
+    </main>
   )
 }

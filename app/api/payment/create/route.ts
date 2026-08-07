@@ -107,8 +107,8 @@ export async function POST(request: Request) {
       },
       callbacks: {
         finish: productId === 'prod-002' 
-          ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard/ea-guide?order=${orderId}`
-          : `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard/my-products`
+          ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/panduan-ea?order=${orderId}`
+          : `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/download?order=${orderId}`
       }
     }
 
