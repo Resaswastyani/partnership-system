@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       if (order.product_id === 'prod-002') {
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
         const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase()
-        const licenseCode = \`FBL-AO-\${dateStr}-\${randomStr}\`
+        const licenseCode = `FBL-AO-${dateStr}-${randomStr}`
         
         // Expires in 30 days
         const expiresAt = new Date()
@@ -73,10 +73,10 @@ export async function POST(request: Request) {
 
         await sql`
           UPDATE orders
-          SET license_code = \${licenseCode}, license_expires_at = \${expiresAt}
-          WHERE order_id = \${order_id}
+          SET license_code = ${licenseCode}, license_expires_at = ${expiresAt}
+          WHERE order_id = ${order_id}
         `
-        console.log(\`✅ Generated EA License \${licenseCode} for order \${order_id}\`)
+        console.log(`✅ Generated EA License ${licenseCode} for order ${order_id}`)
       }
 
       // ── Credit commission to affiliate balance ──────────────────────────────

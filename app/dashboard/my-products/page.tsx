@@ -84,7 +84,7 @@ export default function MyProductsPage() {
             >
               <div 
                 className="h-40 w-full bg-cover bg-center"
-                style={{ backgroundImage: \`url(\${order.product_image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=300&fit=crop'})\` }}
+                style={{ backgroundImage: `url(${order.product_image || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=300&fit=crop'})` }}
               />
               <div className="p-6 flex flex-col flex-1">
                 <div className="flex justify-between items-start mb-4">
@@ -97,7 +97,7 @@ export default function MyProductsPage() {
 
                 {order.product_id === 'prod-002' ? (
                   <Link
-                    href={\`/dashboard/ea-guide?order=\${order.order_id}\`}
+                    href={`/dashboard/ea-guide?order=${order.order_id}`}
                     className="w-full block text-center px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm shadow-[0_0_15px_rgba(139,92,246,0.3)] transition-all"
                   >
                     Lihat Panduan & Lisensi
