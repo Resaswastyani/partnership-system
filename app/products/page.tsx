@@ -90,6 +90,11 @@ export default function ProductsPage() {
         return
       }
 
+      // Auto-login if guest
+      if (!localStorage.getItem('auth_user') && data.buyer) {
+        localStorage.setItem('auth_user', JSON.stringify(data.buyer))
+      }
+
       // Open Midtrans Snap popup
       const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-TmuKXgFh17kvdyDm'
       const snapScript = document.getElementById('midtrans-snap')

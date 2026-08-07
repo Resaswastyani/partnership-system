@@ -120,7 +120,14 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       snapToken: snapToken.token,
-      orderId
+      orderId,
+      buyer: {
+        id: finalBuyer.id,
+        name: finalBuyer.name,
+        email: finalBuyer.email,
+        phone: finalBuyer.phone,
+        role: finalBuyer.role
+      }
     })
   } catch (error: any) {
     console.error('Payment create error:', error)
