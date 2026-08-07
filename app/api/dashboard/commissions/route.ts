@@ -39,8 +39,7 @@ export async function GET(request: Request) {
         COUNT(t.id) as sales_count,
         SUM(t.commission_amount) as total_commission
       FROM transactions t
-      JOIN orders o ON t.order_id = o.id
-      JOIN products p ON o.product_id = p.id
+      JOIN products p ON t.product_id = p.id
       WHERE t.affiliate_id = ${userId} AND t.status = 'completed'
       GROUP BY p.name
       ORDER BY total_commission DESC
