@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Header } from '@/components/Header'
@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer'
 
 function EAGuideContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const orderId = searchParams.get('order')
 
   const [orderInfo, setOrderInfo] = useState<any>(null)
@@ -25,7 +26,9 @@ function EAGuideContent() {
           if (data.order.product_id === 'prod-002') {
             setOrderInfo(data.order)
           } else {
-            setError('Pesanan ini bukan untuk produk EA Robot.')
+            // Not an EA product — auto-redirect to download page
+            router.replace(`/download?order=${orderId}`)
+            return
           }
         } else {
           setError(data.error || 'Pesanan tidak ditemukan atau belum selesai.')
@@ -43,12 +46,15 @@ function EAGuideContent() {
       setError('ID Pesanan tidak valid')
       setLoading(false)
     }
-  }, [orderId])
+  }, [orderId, router])
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-gray-400 text-sm animate-pulse">Memuat panduan Anda...</p>
+        </div>
       </div>
     )
   }
@@ -57,15 +63,22 @@ function EAGuideContent() {
     return (
       <div className="flex items-center justify-center min-h-[60vh] px-4">
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-8 rounded-2xl text-center max-w-md w-full">
-          <h2 className="text-xl font-bold mb-2">Akses Ditolak</h2>
-          <p className="mb-4">{error}</p>
-          <Link href="/products" className="text-primary hover:underline">
-            Kembali ke Produk
-          </Link>
+          <p className="text-4xl mb-4">🔒</p>
+          <h2 className="text-xl font-bold mb-2">Akses Tidak Valid</h2>
+          <p className="mb-6 text-sm">{error}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/buyer/dashboard" className="px-5 py-2.5 bg-primary/20 border border-primary/30 text-primary rounded-xl text-sm font-semibold transition-all">
+              👤 Dashboard Saya
+            </Link>
+            <Link href="/products" className="px-5 py-2.5 bg-white/5 border border-white/10 text-gray-300 hover:text-white rounded-xl text-sm font-semibold transition-all">
+              Kembali ke Produk
+            </Link>
+          </div>
         </div>
       </div>
     )
   }
+
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pt-40 pb-20 px-4" id="baca-online">
