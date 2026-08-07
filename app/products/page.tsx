@@ -101,11 +101,11 @@ export default function ProductsPage() {
         document.head.appendChild(script)
         script.onload = () => {
           setCheckoutModal({ isOpen: false, productId: '' })
-          openSnap(data.snapToken)
+          openSnap(data.snapToken, data.orderId, payload.productId)
         }
       } else {
         setCheckoutModal({ isOpen: false, productId: '' })
-        openSnap(data.snapToken)
+        openSnap(data.snapToken, data.orderId, payload.productId)
       }
     } catch (err) {
       alert('Gagal melakukan pembayaran')
@@ -114,12 +114,16 @@ export default function ProductsPage() {
     }
   }
 
-  const openSnap = (snapToken: string) => {
+  const openSnap = (snapToken: string, orderId: string, productId: string) => {
     // @ts-ignore
     window.snap.pay(snapToken, {
       onSuccess: (result: any) => {
         alert('✅ Pembayaran berhasil! Terima kasih.')
-        window.location.href = '/dashboard?payment=success'
+        if (productId === 'prod-002') {
+          window.location.href = `/dashboard/ea-guide?order=${orderId}`
+        } else {
+          window.location.href = '/dashboard/my-products'
+        }
       },
       onPending: (result: any) => {
         alert('⏳ Pembayaran sedang diproses. Cek email Anda.')

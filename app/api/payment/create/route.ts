@@ -106,7 +106,9 @@ export async function POST(request: Request) {
         phone: finalBuyer.phone || ''
       },
       callbacks: {
-        finish: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard?payment=success`
+        finish: productId === 'prod-002' 
+          ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard/ea-guide?order=${orderId}`
+          : `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard/my-products`
       }
     }
 
