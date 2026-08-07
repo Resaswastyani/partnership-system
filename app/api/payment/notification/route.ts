@@ -61,6 +61,24 @@ export async function POST(request: Request) {
         VALUES (${order.buyer_id}, ${order.product_id}, ${order.amount}, ${order.commission_amount}, ${order.affiliate_id}, 'completed')
       `
 
+      // ── Generate License for EA ─────────────────────────────────────────────
+      if (order.product_id === 'prod-002') {
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+        const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase()
+        const licenseCode = \`FBL-AO-\${dateStr}-\${randomStr}\`
+        
+        // Expires in 30 days
+        const expiresAt = new Date()
+        expiresAt.setDate(expiresAt.getDate() + 30)
+
+        await sql`
+          UPDATE orders
+          SET license_code = \${licenseCode}, license_expires_at = \${expiresAt}
+          WHERE order_id = \${order_id}
+        `
+        console.log(\`✅ Generated EA License \${licenseCode} for order \${order_id}\`)
+      }
+
       // ── Credit commission to affiliate balance ──────────────────────────────
       if (order.affiliate_id && order.commission_amount > 0) {
         await sql`
