@@ -70,11 +70,11 @@ function EAGuideContent() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 pt-40 pb-20 px-4" id="baca-online">
       <div className="text-center mb-16">
-        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">PANDUAN FREE TRIAL<br/><span className="text-primary">30 HARI</span></h1>
+        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">PANDUAN EA<br /><span className="text-primary">FBL</span></h1>
         <div className="inline-block bg-white/[0.05] border border-white/10 px-6 py-3 rounded-full mt-2 mb-8">
           <p className="text-white font-mono font-bold text-lg">"EA_FBL_1 XAUUSD M1/M5 – Cent Exness"</p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-2">
           <a href="#" className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
