@@ -139,8 +139,9 @@ export default function ProductsPage() {
     // @ts-ignore
     window.snap.pay(snapToken, {
       onSuccess: (result: any) => {
-        alert('✅ Pembayaran berhasil! Terima kasih.')
-        window.location.href = '/buyer/dashboard'
+        // Redirect to panduan-ea first so user can see their license/guide
+        // From panduan-ea there is a link to buyer dashboard
+        window.location.href = `/panduan-ea?order=${orderId}`
       },
       onPending: (result: any) => {
         alert('⏳ Pembayaran sedang diproses. Cek email Anda.')

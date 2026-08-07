@@ -89,12 +89,28 @@ function EAGuideContent() {
             </svg>
           </a>
         </div>
-        
-        <div className="flex justify-center mt-6">
-          <Link href="/buyer/dashboard" className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 hover:text-white transition-all text-sm font-semibold flex items-center gap-2">
-            <span>👤</span> Lihat Semua Produk Saya →
+
+        {/* Dashboard Access Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-10 bg-gradient-to-r from-emerald-900/40 to-teal-900/30 border border-emerald-500/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-[0_0_30px_rgba(16,185,129,0.1)]"
+        >
+          <div className="text-left">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-2xl">🎉</span>
+              <p className="text-emerald-400 font-bold text-lg">Pembelian Berhasil!</p>
+            </div>
+            <p className="text-gray-300 text-sm">Produk ini sudah tersimpan di akun Anda. Akses kapan saja melalui Dashboard Member Anda.</p>
+          </div>
+          <Link
+            href="/buyer/dashboard"
+            className="whitespace-nowrap flex items-center gap-2 px-6 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm"
+          >
+            <span>👤</span> Lihat Dashboard Saya →
           </Link>
-        </div>
+        </motion.div>
       </div>
 
       {/* License Card */}
