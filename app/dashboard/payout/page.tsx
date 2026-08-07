@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { formatRupiah } from '@/lib/utils'
 
 const BANK_LIST = [
   'BCA', 'BNI', 'BRI', 'Mandiri', 'CIMB Niaga', 'Danamon', 'Permata Bank',
@@ -230,7 +231,7 @@ export default function PayoutPage() {
                     onClick={() => setForm(p => ({ ...p, amount: String(Math.min(amt, balance)) }))}
                     className="px-3 py-1 text-xs bg-white/5 border border-white/10 rounded-lg text-gray-400 hover:text-white hover:border-primary/50 transition-all"
                   >
-                    {(amt / 1000).toLocaleString()}K
+                    {formatRupiah(amt)}
                   </button>
                 ))}
                 <button

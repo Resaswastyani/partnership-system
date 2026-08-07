@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PRODUCTS } from '@/lib/mock-data'
+import { formatRupiah } from '@/lib/utils'
 
 export function ProductShowcase() {
   return (
@@ -84,7 +85,7 @@ export function ProductShowcase() {
                   <div className="space-y-3 pt-4 border-t border-white/5 mt-auto">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 text-xs uppercase tracking-wider">Harga</span>
-                      <span className="text-white font-bold">{(product.price / 1000).toLocaleString()}K</span>
+                      <span className="text-white font-bold">{formatRupiah(product.price)}</span>
                     </div>
                     <div className="flex justify-between items-center bg-primary/10 rounded-xl p-3 border border-primary/20">
                       <span className="text-primary font-bold text-sm">Komisi</span>

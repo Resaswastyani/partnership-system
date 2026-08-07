@@ -6,6 +6,7 @@ import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect, useCallback } from 'react'
+import { formatRupiah } from '@/lib/utils'
 
 export default function ProductsPage() {
   const containerRef = useRef(null)
@@ -44,12 +45,20 @@ export default function ProductsPage() {
     const params = new URLSearchParams(window.location.search)
     if (params.has('ref')) setRefCode(params.get('ref'))
 
-    // Pre-fill user info if logged in
-    const userStr = localStorage.getItem('auth_user')
-    if (userStr) {
-      const parsed = JSON.parse(userStr)
+    // Pre-fill user info if logged in (buyer or affiliate)
+    const buyerStr = localStorage.getItem('buyer_user') || localStorage.getItem('auth_user')
+    if (buyerStr) {
+      const parsed = JSON.parse(buyerStr)
       setBuyerInfo(prev => ({ ...prev, name: parsed.name, email: parsed.email, phone: parsed.phone || '' }))
     }
+
+    // Check for pending purchase after login
+    const pendingPurchase = localStorage.getItem('pending_purchase')
+    if (pendingPurchase && buyerStr) {
+      localStorage.removeItem('pending_purchase')
+      setCheckoutModal({ isOpen: true, productId: pendingPurchase })
+    }
+
     fetch('/api/products')
       .then(res => res.json())
       .then(data => {
@@ -60,6 +69,13 @@ export default function ProductsPage() {
   }, [])
 
   const handleBuy = (productId: string) => {
+    const buyerStr = localStorage.getItem('buyer_user') || localStorage.getItem('auth_user')
+    if (!buyerStr) {
+      // Save intent and redirect to buyer login
+      localStorage.setItem('pending_purchase', productId)
+      window.location.href = '/buyer/login?redirect=/products'
+      return
+    }
     setCheckoutModal({ isOpen: true, productId })
   }
 
@@ -124,11 +140,7 @@ export default function ProductsPage() {
     window.snap.pay(snapToken, {
       onSuccess: (result: any) => {
         alert('✅ Pembayaran berhasil! Terima kasih.')
-        if (productId === 'prod-002') {
-          window.location.href = `/panduan-ea?order=${orderId}`
-        } else {
-          window.location.href = `/download?order=${orderId}`
-        }
+        window.location.href = '/buyer/dashboard'
       },
       onPending: (result: any) => {
         alert('⏳ Pembayaran sedang diproses. Cek email Anda.')
@@ -348,7 +360,7 @@ export default function ProductsPage() {
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         product.price === 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-primary/10 text-primary'
                       }`}>
-                        {product.price === 0 ? '✓ Gratis' : `Rp ${(product.price / 1000).toLocaleString()}K`}
+                        {product.price === 0 ? '✓ Gratis' : formatRupiah(product.price)}
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-2">
@@ -365,7 +377,7 @@ export default function ProductsPage() {
                       {product.price === 0 ? (
                         <span className="text-emerald-400 font-black text-lg">Free</span>
                       ) : (
-                        <span className="text-white font-black text-lg">Rp {(product.price / 1000).toLocaleString()}K</span>
+                        <span className="text-white font-black text-lg">{formatRupiah(product.price)}</span>
                       )}
                       {product.commission_rate > 0 && (
                         <div className="text-primary text-xs font-semibold mt-0.5">{product.commission_rate}% komisi</div>
@@ -423,7 +435,7 @@ export default function ProductsPage() {
                   <td className="p-6 text-gray-300 font-medium">Harga Dasar</td>
                   {products.map((p: any) => (
                     <td key={p.id} className="p-6 text-center font-bold text-xl">
-                      Rp {(p.price / 1000).toLocaleString()}K
+                      {formatRupiah(p.price)}
                     </td>
                   ))}
                 </tr>

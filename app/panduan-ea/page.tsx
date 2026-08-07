@@ -89,6 +89,12 @@ function EAGuideContent() {
             </svg>
           </a>
         </div>
+        
+        <div className="flex justify-center mt-6">
+          <Link href="/buyer/dashboard" className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 hover:text-white transition-all text-sm font-semibold flex items-center gap-2">
+            <span>👤</span> Lihat Semua Produk Saya →
+          </Link>
+        </div>
       </div>
 
       {/* License Card */}

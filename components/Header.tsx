@@ -2,11 +2,20 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [buyerState, setBuyerState] = useState<any>(null)
+  const [authState, setAuthState] = useState<any>(null)
+
+  useEffect(() => {
+    const buyerStr = localStorage.getItem('buyer_user')
+    const authStr = localStorage.getItem('auth_user')
+    if (buyerStr) setBuyerState(JSON.parse(buyerStr))
+    if (authStr) setAuthState(JSON.parse(authStr))
+  }, [])
 
   return (
     <header className="fixed top-0 w-full z-50 bg-[#080b14]/80 backdrop-blur-md border-b border-white/5">
@@ -74,18 +83,30 @@ export function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex gap-4 items-center">
-            <Link
-              href="/login"
-              className="px-6 py-2 text-gray-300 text-sm font-medium hover:text-white hover:bg-white/5 rounded-full transition-all"
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              className="px-6 py-2 bg-primary text-white text-sm font-bold rounded-full hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all duration-300"
-            >
-              Daftar Sekarang
-            </Link>
+            {buyerState ? (
+              <Link href="/buyer/dashboard" className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-full border border-white/20 transition-all flex items-center gap-2">
+                <span>👤</span> Akun Member
+              </Link>
+            ) : authState ? (
+              <Link href={authState.role === 'admin' ? '/admin' : '/dashboard'} className="px-6 py-2 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 text-sm font-bold rounded-full transition-all">
+                Partner Area
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-6 py-2 text-gray-300 text-sm font-medium hover:text-white hover:bg-white/5 rounded-full transition-all"
+                >
+                  Login Partner
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-6 py-2 bg-primary text-white text-sm font-bold rounded-full hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all duration-300"
+                >
+                  Daftar Partner
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -123,12 +144,24 @@ export function Header() {
             </div>
 
             <div className="pt-2 flex flex-col gap-2 px-4">
-              <Link href="/login" className="w-full py-2.5 text-center text-white text-sm font-medium border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
-                Login
-              </Link>
-              <Link href="/register" className="w-full py-2.5 text-center bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors">
-                Daftar Sekarang
-              </Link>
+              {buyerState ? (
+                <Link href="/buyer/dashboard" className="w-full py-2.5 text-center bg-white/10 text-white text-sm font-bold border border-white/20 rounded-xl hover:bg-white/20 transition-colors">
+                  👤 Akun Member
+                </Link>
+              ) : authState ? (
+                <Link href={authState.role === 'admin' ? '/admin' : '/dashboard'} className="w-full py-2.5 text-center bg-primary/20 text-primary text-sm font-bold border border-primary/30 rounded-xl hover:bg-primary/30 transition-colors">
+                  Partner Area
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" className="w-full py-2.5 text-center text-white text-sm font-medium border border-white/10 rounded-xl hover:bg-white/5 transition-colors">
+                    Login Partner
+                  </Link>
+                  <Link href="/register" className="w-full py-2.5 text-center bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors">
+                    Daftar Partner
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         )}
